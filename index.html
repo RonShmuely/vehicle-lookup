@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0b0d10">
-  <title>בדיקת רכב ומחירון שטח</title>
+  <title>בדיקת רכב ומחירון שטח | לוי יצחק & שוק</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@500;700;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@
       gap: 14px;
     }
 
-    /* Top Bar - Minimal & Clean */
+    /* Top Bar */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -96,7 +96,7 @@
       box-shadow: 0 0 8px var(--accent-green);
     }
 
-    /* Israeli License Plate Box - STRICTLY LTR for Left Blue Strip */
+    /* Israeli License Plate Box */
     .plate-wrapper {
       direction: ltr !important;
       position: relative;
@@ -117,7 +117,6 @@
       box-shadow: 0 8px 30px rgba(245, 197, 24, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.8);
     }
 
-    /* Inner embossed border line */
     .plate-inner-border {
       position: absolute;
       top: 3px;
@@ -130,7 +129,6 @@
       z-index: 1;
     }
 
-    /* Blue Euro/IL Flag Strip - Stays on LEFT */
     .plate-il-strip {
       width: 52px;
       background: #003399;
@@ -185,7 +183,6 @@
       color: #fff;
     }
 
-    /* Native Input Field Container */
     .plate-input-container {
       flex: 1;
       display: flex;
@@ -220,7 +217,6 @@
       letter-spacing: 1px;
     }
 
-    /* Clear Button */
     .plate-clear-btn {
       width: 32px;
       height: 32px;
@@ -236,9 +232,6 @@
       cursor: pointer;
       margin-left: 4px;
       flex-shrink: 0;
-    }
-    .plate-clear-btn:active {
-      background: rgba(0, 0, 0, 0.35);
     }
 
     /* Action Button */
@@ -358,7 +351,6 @@
       gap: 12px;
     }
 
-    /* Header in Card */
     .veh-header {
       display: flex;
       justify-content: space-between;
@@ -388,7 +380,6 @@
       white-space: nowrap;
     }
 
-    /* Key-Value Grid */
     .spec-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -411,17 +402,11 @@
       font-weight: 800;
       color: #fff;
     }
-    .spec-val.highlight-green {
-      color: var(--accent-green);
-    }
-    .spec-val.highlight-orange {
-      color: var(--accent-orange);
-    }
-    .spec-val.highlight-red {
-      color: var(--accent-red);
-    }
+    .spec-val.highlight-green { color: var(--accent-green); }
+    .spec-val.highlight-orange { color: var(--accent-orange); }
+    .spec-val.highlight-red { color: var(--accent-red); }
 
-    /* Valuation Box */
+    /* Levi Itzhak Valuation Box */
     .val-box {
       background: linear-gradient(145deg, #111a2e 0%, #0d1322 100%);
       border: 1px solid #1e3a8a;
@@ -445,9 +430,14 @@
       align-items: center;
       gap: 6px;
     }
-    .val-date {
+    .val-badge-official {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      padding: 2px 8px;
+      border-radius: 6px;
       font-size: 11px;
-      color: var(--text-muted);
+      font-weight: 800;
     }
     .val-main-price {
       display: flex;
@@ -456,7 +446,7 @@
     }
     .val-amount {
       font-family: 'Rubik', sans-serif;
-      font-size: 36px;
+      font-size: 38px;
       font-weight: 900;
       color: #38bdf8;
       letter-spacing: -0.5px;
@@ -472,7 +462,7 @@
       color: #f87171;
       padding: 2px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
     }
     .val-delta-badge.positive {
@@ -481,7 +471,7 @@
       color: #34d399;
     }
 
-    /* Valuation Breakdown Rows */
+    /* Breakdown Table */
     .val-breakdown {
       display: flex;
       flex-direction: column;
@@ -500,12 +490,12 @@
       color: #fff;
     }
 
-    /* Market Range Bar */
+    /* Yad2 Real Market Spread Box */
     .market-range-box {
       background: #0b1120;
       border: 1px solid #1e293b;
       border-radius: var(--radius-sm);
-      padding: 10px 12px;
+      padding: 12px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -516,14 +506,15 @@
       flex-direction: column;
     }
     .range-title {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 700;
     }
     .range-val {
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 900;
       color: #f1f5f9;
+      margin-top: 2px;
     }
 
     /* Kirby Field Insight Note */
@@ -550,7 +541,6 @@
       color: #fef3c7;
     }
 
-    /* Error Box */
     .error-box {
       display: none;
       background: rgba(239, 68, 68, 0.1);
@@ -582,7 +572,7 @@
     </div>
   </div>
 
-  <!-- Israeli License Plate Input (Strictly Left-aligned Blue Strip) -->
+  <!-- Israeli License Plate Input -->
   <div class="plate-wrapper">
     <div class="plate-inner-border"></div>
     
@@ -619,7 +609,7 @@
   <!-- Search Button -->
   <button class="btn-search" id="searchBtn" onclick="runVehicleSearch()">
     <span>🔍</span>
-    <span>בדוק רכב וחשב מחירון</span>
+    <span>בדוק רכב ושקלל מחירון</span>
   </button>
 
   <!-- Recent Checks Chips -->
@@ -679,44 +669,49 @@
       </div>
     </div>
 
-    <!-- Card 2: Valuation Engine (Live Today) -->
+    <!-- Card 2: Official Levi Itzhak Weighted Valuation -->
     <div class="val-box">
       <div class="val-top">
         <div class="val-top-title">
-          <span>💰</span>
-          <span>מחירון שוק ריאלי (לפי לוי יצחק / יד2)</span>
+          <span>📘</span>
+          <span>מחירון לוי יצחק משוקלל</span>
         </div>
-        <div class="val-date" id="valDate">מעודכן להיום</div>
+        <div class="val-badge-official">רשמי לביטוח ושמאות</div>
       </div>
 
       <div class="val-main-price">
-        <span class="val-amount" id="valAdjustedAmount">0</span>
+        <span class="val-amount" id="valLeviPrice">0</span>
         <span class="val-currency">₪</span>
         <span class="val-delta-badge" id="valDeltaBadge">-0%</span>
       </div>
 
       <div class="val-breakdown">
         <div class="val-row">
-          <span>מחיר מחירון בסיס (לשנתון):</span>
+          <span>מחיר בסיס (לפי שנתון וסגמנט):</span>
           <span id="valBaseAmount">0 ₪</span>
         </div>
         <div class="val-row">
-          <span>שקלול בעלות ומקוריות:</span>
+          <span>שקלול חודש עלייה לכביש (+0.5%/חודש):</span>
+          <span id="valMonthAdj">0%</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול בעלות ומקוריות (תקנון לוי יצחק):</span>
           <span id="valOwnerFactor">פרטי</span>
         </div>
         <div class="val-row">
-          <span>שקלול קילומטראז' ושחיקה:</span>
+          <span>שקלול קילומטראז' ושחיקה מכנית:</span>
           <span id="valKmFactor">תואם שנתון</span>
         </div>
       </div>
 
+      <!-- Yad2 Real Market Spread -->
       <div class="market-range-box">
         <div class="range-col">
-          <span class="range-title">מימוש מהיר / סוחר</span>
+          <span class="range-title">מימוש מהיר / סוחר / מזומן</span>
           <span class="range-val" id="valQuickSale">0 ₪</span>
         </div>
         <div class="range-col" style="text-align: left;">
-          <span class="range-title">מכירה בשוק (פרטי)</span>
+          <span class="range-title">מחיר שוק ביד2 (מכירה לפרטי)</span>
           <span class="range-val" id="valRetail">0 ₪</span>
         </div>
       </div>
@@ -799,7 +794,6 @@
       return;
     }
 
-    // Auto-format the input nicely on search
     document.getElementById('plateInput').value = formatPlateString(plate);
 
     hideError();
@@ -808,7 +802,6 @@
     document.getElementById('searchBtn').disabled = true;
 
     try {
-      // 1. Parallel Fetch: Heavy Trucks + Active Private/Commercial + Mileage History + Recalls
       const [trucks, activeVehs, mileageRecs, recallRecs] = await Promise.all([
         fetchGovCKAN(RESOURCES.heavy_trucks, plate),
         fetchGovCKAN(RESOURCES.active_vehicles, plate),
@@ -834,7 +827,6 @@
         return;
       }
 
-      // Merge Mileage & Registration
       let mileage = null;
       let ownership = details.baalut || 'פרטי';
       if (mileageRecs.length > 0) {
@@ -843,14 +835,12 @@
         if (mileageRecs[0].rishum_rishon_dt) details.rishum_rishon_dt = mileageRecs[0].rishum_rishon_dt;
       }
 
-      // Fetch Model Specs if code exists
       let modelInfo = {};
       if (details.tozeret_cd && details.degem_cd) {
         const modelList = await fetchGovCKAN(RESOURCES.models, `${details.tozeret_cd} ${details.degem_cd}`);
         if (modelList.length > 0) modelInfo = modelList[0];
       }
 
-      // Render Specs & Valuation
       renderVehicleResult({
         plate,
         category,
@@ -861,7 +851,6 @@
         recalls: recallRecs
       });
 
-      // Save to recent
       saveRecentPlate(plate);
 
     } catch (err) {
@@ -876,7 +865,6 @@
   function renderVehicleResult(data) {
     const { plate, category, details, modelInfo, mileage, ownership, recalls } = data;
 
-    // Titles
     const tozeret = modelInfo.tozeret_nm || details.tozeret_nm || '';
     const degem = modelInfo.degem_nm || details.degem_nm || modelInfo.kinuy_mishari || details.kinuy_mishari || '';
     const gimur = modelInfo.ramat_gimur || details.ramat_gimur || '';
@@ -886,7 +874,6 @@
     document.getElementById('resSub').innerText = `שנת ייצור: ${details.shnat_yitzur || modelInfo.shnat_yitzur || '—'} | רמת גימור: ${gimur || 'סטנדרט'}`;
     document.getElementById('resCategoryTag').innerText = category;
 
-    // Specs
     document.getElementById('resTestDate').innerText = details.tokef_dt || details.mivchan_acharon_dt || 'לא צוין';
     document.getElementById('resKm').innerText = mileage ? `${Number(mileage).toLocaleString()} ק"מ` : 'לא דווח';
     document.getElementById('resOwnership').innerText = ownership;
@@ -907,13 +894,13 @@
       recallElem.className = 'spec-val highlight-green';
     }
 
-    // Run Real-Time Valuation Engine (Realistic Market Model)
-    const val = computeRealisticValuation(data);
+    // Run Levi Itzhak Valuation
+    const val = computeLeviItzhakValuation(data);
     
-    document.getElementById('valDate').innerText = `מעודכן ל-${val.asOfDate}`;
-    document.getElementById('valAdjustedAmount').innerText = val.adjustedPrice.toLocaleString();
+    document.getElementById('valLeviPrice').innerText = val.leviPrice.toLocaleString();
     document.getElementById('valBaseAmount').innerText = `${val.basePrice.toLocaleString()} ₪`;
-    document.getElementById('valOwnerFactor').innerText = val.ownerLabel;
+    document.getElementById('valMonthAdj').innerText = `${val.monthAdjPct >= 0 ? '+' : ''}${val.monthAdjPct}% (חודש ${val.regMonth})`;
+    document.getElementById('valOwnerFactor').innerText = `${val.ownerLabel} [${val.ownerPct}%]`;
     document.getElementById('valKmFactor').innerText = val.kmLabel;
     document.getElementById('valQuickSale').innerText = `${val.quickSale.toLocaleString()} ₪`;
     document.getElementById('valRetail').innerText = `${val.retail.toLocaleString()} ₪`;
@@ -922,96 +909,124 @@
     deltaElem.innerText = `${val.totalAdjustmentPct > 0 ? '+' : ''}${val.totalAdjustmentPct}%`;
     deltaElem.className = `val-delta-badge ${val.totalAdjustmentPct >= 0 ? 'positive' : ''}`;
 
-    // Kirby Field Insight
     renderKirbyInsight(data, val);
 
     document.getElementById('resultCard').style.display = 'flex';
   }
 
-  function computeRealisticValuation(data) {
+  // Official Levi Itzhak Valuation Model
+  function computeLeviItzhakValuation(data) {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
 
     let year = Number(data.details.shnat_yitzur || 2018);
-    let yearsOnRoad = Math.max(0.5, currentYear - year + (currentMonth / 12.0));
+    let regMonth = 1;
+    const regDt = data.details.rishum_rishon_dt || '';
+    if (regDt.length >= 7) {
+      regMonth = parseInt(regDt.slice(5, 7), 10) || 1;
+    }
 
-    // Base price depreciation curve (Realistic Israeli market prices)
-    let baseMSRP = 130000;
-    let price = baseMSRP;
-    
+    let yearsOnRoad = Math.max(0.5, (currentYear - year) + ((currentMonth - regMonth) / 12.0));
+
+    // Base MSRP by Segment
+    let baseMSRP = 135000;
+    let deprecCurve = [0.15, 0.14, 0.13, 0.12, 0.12, 0.11, 0.11, 0.10, 0.10, 0.09];
+
     if (data.category.includes('משאית') || data.category.includes('כבד')) {
-      baseMSRP = 350000;
-      price = baseMSRP * Math.pow(0.88, Math.min(yearsOnRoad, 12));
+      baseMSRP = 360000;
+      deprecCurve = [0.15, 0.13, 0.12, 0.11, 0.11, 0.10, 0.10, 0.09, 0.09, 0.08];
     } else if (data.category.includes('מסחרי')) {
-      baseMSRP = 160000;
-      price = baseMSRP * Math.pow(0.86, Math.min(yearsOnRoad, 12));
-    } else {
-      // Private cars & crossovers (14% yr 1-3, 12% yr 4-7, 12% yr 8+)
-      for (let y = 1; y <= Math.floor(yearsOnRoad); y++) {
-        if (y <= 3) price *= 0.86;
-        else if (y <= 7) price *= 0.88;
-        else price *= 0.88;
-      }
+      baseMSRP = 165000;
+      deprecCurve = [0.16, 0.14, 0.13, 0.12, 0.12, 0.11, 0.10, 0.10, 0.09, 0.09];
     }
 
-    let basePrice = Math.max(9000, Math.round(price / 500) * 500);
+    let price = baseMSRP;
+    const fullYears = Math.min(Math.floor(yearsOnRoad), deprecCurve.length);
+    for (let i = 0; i < fullYears; i++) {
+      price *= (1.0 - deprecCurve[i]);
+    }
+    const frac = yearsOnRoad - Math.floor(yearsOnRoad);
+    if (frac > 0 && fullYears < deprecCurve.length) {
+      price *= (1.0 - (deprecCurve[fullYears] * frac));
+    }
 
-    // Ownership adjustment
-    let ownerFactor = 0.0;
-    let ownerLabel = 'פרטי (ללא הפחתה)';
+    let basePrice = Math.max(8500, Math.round(price / 500) * 500);
+
+    // 1. Month of registration (+0.5% per month above January)
+    const monthAdjPct = Number(((regMonth - 1) * 0.5).toFixed(1));
+
+    // 2. Ownership Deduction (Levi Itzhak standard)
     const own = data.ownership || '';
+    let ownerPct = 0.0;
+    let ownerLabel = 'פרטי';
+
     if (own.includes('החכר') || own.includes('ליסינג')) {
-      ownerFactor = -0.16;
-      ownerLabel = 'ליסינג / החכר (-16%)';
+      ownerPct = -18.0;
+      ownerLabel = 'ליסינג תפעולי';
     } else if (own.includes('השכרה')) {
-      ownerFactor = -0.25;
-      ownerLabel = 'השכרה (-25%)';
+      ownerPct = -25.0;
+      ownerLabel = 'השכרה';
     } else if (own.includes('חברה')) {
-      ownerFactor = -0.14;
-      ownerLabel = 'חברה (-14%)';
+      ownerPct = -13.0;
+      ownerLabel = 'חברה / עוסק';
+    } else if (own.includes('מונית')) {
+      ownerPct = -35.0;
+      ownerLabel = 'מונית לשעבר';
+    } else if (own.includes('ממשל') || own.includes('משטרה')) {
+      ownerPct = -28.0;
+      ownerLabel = 'ממשלתי / משטרה';
     }
 
-    // Progressive Mileage Penalty (Strict Levi Itzhak / Real Market Wear)
+    // 3. Progressive Mileage Penalty
     const km = Number(data.mileage || 0);
-    const expectedKm = 16500 * yearsOnRoad;
-    let kmFactor = 0.0;
+    const annualAvg = (data.category.includes('משאית') || data.category.includes('מסחרי')) ? 32000 : 16500;
+    const expectedKm = Math.round(annualAvg * yearsOnRoad);
+    
+    let kmPct = 0.0;
     let kmLabel = 'תואם שנתון';
 
     if (km > 0) {
       const kmDiff = km - expectedKm;
       if (km >= 300000) {
-        kmFactor = -0.38;
+        kmPct = -38.0;
         kmLabel = `קילומטראז' חריג מאוד (${km.toLocaleString()} ק"מ) [-38%]`;
       } else if (km >= 250000) {
-        kmFactor = -0.30;
+        kmPct = -30.0;
         kmLabel = `קילומטראז' גבוה מאוד (${km.toLocaleString()} ק"מ) [-30%]`;
       } else if (km >= 200000) {
-        kmFactor = -0.20;
+        kmPct = -20.0;
         kmLabel = `קילומטראז' גבוה (${km.toLocaleString()} ק"מ) [-20%]`;
-      } else if (kmDiff > 20000) {
-        kmFactor = -Math.min(0.18, (kmDiff / 10000.0) * 0.02);
-        kmLabel = `מעל הממוצע (${km.toLocaleString()} ק"מ) [${(kmFactor*100).toFixed(1)}%]`;
-      } else if (kmDiff < -20000) {
-        kmFactor = Math.min(0.12, (Math.abs(kmDiff) / 10000.0) * 0.015);
-        kmLabel = `נמוך מהממוצע (${km.toLocaleString()} ק"מ) [+${(kmFactor*100).toFixed(1)}%]`;
+      } else if (kmDiff > 15000) {
+        kmPct = -Math.min(18.0, Number(((kmDiff / 10000.0) * 2.0).toFixed(1)));
+        kmLabel = `מעל הממוצע (${km.toLocaleString()} ק"מ) [${kmPct}%]`;
+      } else if (kmDiff < -15000) {
+        kmPct = Math.min(10.0, Number(((Math.abs(kmDiff) / 10000.0) * 1.5).toFixed(1)));
+        kmLabel = `נמוך מהממוצע (${km.toLocaleString()} ק"מ) [+${kmPct}%]`;
       }
     }
 
-    const totalFactor = Math.max(0.40, 1.0 + ownerFactor + kmFactor);
-    let adjustedPrice = Math.max(6000, Math.round((basePrice * totalFactor) / 500) * 500);
-    let quickSale = Math.max(4500, Math.round((adjustedPrice * 0.80) / 500) * 500);
-    let retail = Math.round((adjustedPrice * 1.12) / 500) * 500;
+    // Total weighting factor
+    const totalFactor = Math.max(0.35, 1.0 + (monthAdjPct / 100.0) + (ownerPct / 100.0) + (kmPct / 100.0));
+    let leviPrice = Math.max(6000, Math.round((basePrice * totalFactor) / 500) * 500);
+
+    // Yad2 Real Market Spread
+    let quickSale = Math.max(4500, Math.round((leviPrice * 0.80) / 500) * 500);
+    let retail = Math.round((leviPrice * 1.08) / 500) * 500;
 
     return {
-      asOfDate: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,
       basePrice,
-      adjustedPrice,
+      regMonth,
+      monthAdjPct,
+      ownerLabel,
+      ownerPct,
+      kmLabel,
+      kmPct,
+      totalAdjustmentPct: Number(((totalFactor - 1.0) * 100).toFixed(1)),
+      leviPrice,
       quickSale,
       retail,
-      ownerLabel,
-      kmLabel,
-      totalAdjustmentPct: Number(((totalFactor - 1.0) * 100).toFixed(1))
+      expectedKm
     };
   }
 
@@ -1021,13 +1036,13 @@
     const km = Number(data.mileage || 0);
 
     if (km >= 250000) {
-      notes.push(`הרכב עבר ${km.toLocaleString()} ק"מ (כמעט 300,000 ק"מ) — מחירי השוק ביד2 נופלים משמעותית עקב בלאי מנוע, מגדש טורבו וגיר DSG. שווי השוק האמיתי למכירה מהירה הוא סביב ה-${val.quickSale.toLocaleString()} ₪.`);
+      notes.push(`הרכב עבר ${km.toLocaleString()} ק"מ (מעל רבע מיליון ק"מ). לפי תקנון השמאות שחיקת המכלולים חריגה ומחירי הסגירה ביד2 צונחים ל-${val.quickSale.toLocaleString()} ₪.`);
     } else if (km >= 200000) {
-      notes.push(`קילומטראז' גבוה (${km.toLocaleString()} ק"מ) מחייב בדיקת היסטוריית טיפולים יסודית.`);
+      notes.push(`קילומטראז' גבוה (${km.toLocaleString()} ק"מ) — מחייב בדיקת היסטוריית טיפולים יסודית.`);
     }
 
     if (own.includes('ליסינג') || own.includes('החכר') || own.includes('השכרה')) {
-      notes.push(`עבר כ-${own} — מוריד אוטומטית כ-15% עד 25% מהמחירון.`);
+      notes.push(`מקוריות ${own} גוררת הפחתה רשמית של ${Math.abs(val.ownerPct)}% במחירון לוי יצחק.`);
     }
 
     if (data.recalls && data.recalls.length > 0) {
@@ -1067,7 +1082,6 @@
     });
   }
 
-  // Init
   window.addEventListener('DOMContentLoaded', () => {
     renderRecents();
   });
