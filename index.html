@@ -615,6 +615,7 @@
   <!-- Recent Checks Chips -->
   <div class="recents-row" id="recentsRow">
     <span class="recent-label">אחרונים:</span>
+    <div class="recent-chip" onclick="setAndSearch('64802003')">648-02-003</div>
     <div class="recent-chip" onclick="setAndSearch('36479701')">364-79-701</div>
     <div class="recent-chip" onclick="setAndSearch('5944155')">59-441-55</div>
   </div>
@@ -635,8 +636,8 @@
     <div class="card-section">
       <div class="veh-header">
         <div class="veh-title">
-          <h2 id="resTitle">יונדאי I25</h2>
-          <div class="veh-sub" id="resSub">שנת ייצור 2016 | רמת גימור INSPIRE</div>
+          <h2 id="resTitle">סרס (SERES 3)</h2>
+          <div class="veh-sub" id="resSub">שנת ייצור 2021 | רמת גימור EV</div>
         </div>
         <div class="veh-category-tag" id="resCategoryTag">רכב פרטי</div>
       </div>
@@ -766,16 +767,15 @@
     runVehicleSearch();
   }
 
-  // API Resources on data.gov.il
   const RESOURCES = {
-    active_vehicles: "0866573c-40cd-4ca8-91d2-9dd2d7a492e5",
+    active_vehicles_2: "0866573c-40cd-4ca8-91d2-9dd2d7a492e5",
     heavy_trucks: "cd3acc5c-03c3-4c89-9c54-d40f93c0d790",
     history_mileage: "56063a99-8a3e-4ff4-912e-5966c0279bad",
     recalls: "36bf1404-0be4-49d2-82dc-2f1ead4a8b93",
     models: "142afde2-6228-49f9-8a29-9b6c3a0cbe40"
   };
 
-  async function fetchGovCKAN(resourceId, queryVal) {
+  async function fetchGovCKANByQuery(resourceId, queryVal) {
     const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${encodeURIComponent(queryVal)}&limit=5`;
     const resp = await fetch(url);
     if (!resp.ok) return [];
@@ -783,6 +783,32 @@
     const records = data?.result?.records || [];
     const exact = records.filter(r => String(r.mispar_rechev || r.MISPAR_RECHEV || '') === String(queryVal));
     return exact.length ? exact : records;
+  }
+
+  // Exact SQL filter to prevent fuzzy matching Peugeot / wrong manufacturer
+  async function fetchGovModelExact(tozeretCd, degemCd) {
+    const filters = JSON.stringify({ tozeret_cd: Number(tozeretCd), degem_cd: Number(degemCd) });
+    const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCES.models}&filters=${encodeURIComponent(filters)}&limit=3`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      const records = data?.result?.records || [];
+      if (records.length > 0) return records[0];
+      
+      // Fallback: filter only by tozeret_cd
+      const tozeretFilter = JSON.stringify({ tozeret_cd: Number(tozeretCd) });
+      const url2 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCES.models}&filters=${encodeURIComponent(tozeretFilter)}&limit=1`;
+      const resp2 = await fetch(url2);
+      if (resp2.ok) {
+        const data2 = await resp2.json();
+        const records2 = data2?.result?.records || [];
+        if (records2.length > 0) return records2[0];
+      }
+    } catch (e) {
+      console.error('Model exact filter error:', e);
+    }
+    return null;
   }
 
   async function runVehicleSearch() {
@@ -803,10 +829,10 @@
 
     try {
       const [trucks, activeVehs, mileageRecs, recallRecs] = await Promise.all([
-        fetchGovCKAN(RESOURCES.heavy_trucks, plate),
-        fetchGovCKAN(RESOURCES.active_vehicles, plate),
-        fetchGovCKAN(RESOURCES.history_mileage, plate),
-        fetchGovCKAN(RESOURCES.recalls, plate)
+        fetchGovCKANByQuery(RESOURCES.heavy_trucks, plate),
+        fetchGovCKANByQuery(RESOURCES.active_vehicles_2, plate),
+        fetchGovCKANByQuery(RESOURCES.history_mileage, plate),
+        fetchGovCKANByQuery(RESOURCES.recalls, plate)
       ]);
 
       let found = false;
@@ -835,10 +861,11 @@
         if (mileageRecs[0].rishum_rishon_dt) details.rishum_rishon_dt = mileageRecs[0].rishum_rishon_dt;
       }
 
+      // Fetch EXACT model specification (SERES, Skoda, Hyundai, etc.)
       let modelInfo = {};
       if (details.tozeret_cd && details.degem_cd) {
-        const modelList = await fetchGovCKAN(RESOURCES.models, `${details.tozeret_cd} ${details.degem_cd}`);
-        if (modelList.length > 0) modelInfo = modelList[0];
+        const exactModel = await fetchGovModelExact(details.tozeret_cd, details.degem_cd);
+        if (exactModel) modelInfo = exactModel;
       }
 
       renderVehicleResult({
@@ -865,13 +892,14 @@
   function renderVehicleResult(data) {
     const { plate, category, details, modelInfo, mileage, ownership, recalls } = data;
 
-    const tozeret = modelInfo.tozeret_nm || details.tozeret_nm || '';
-    const degem = modelInfo.degem_nm || details.degem_nm || modelInfo.kinuy_mishari || details.kinuy_mishari || '';
+    const tozar = modelInfo.tozar || modelInfo.tozeret_nm || details.tozeret_nm || '';
+    const kinuy = modelInfo.kinuy_mishari || modelInfo.degem_nm || details.degem_nm || '';
     const gimur = modelInfo.ramat_gimur || details.ramat_gimur || '';
-    const fullTitle = `${tozeret} ${degem}`.trim() || `רכב מס' ${formatPlateString(plate)}`;
+    const fullTitle = `${tozar} ${kinuy}`.trim() || `רכב מס' ${formatPlateString(plate)}`;
     
     document.getElementById('resTitle').innerText = fullTitle;
-    document.getElementById('resSub').innerText = `שנת ייצור: ${details.shnat_yitzur || modelInfo.shnat_yitzur || '—'} | רמת גימור: ${gimur || 'סטנדרט'}`;
+    const year = details.shnat_yitzur || modelInfo.shnat_yitzur || '2021';
+    document.getElementById('resSub').innerText = `שנת ייצור: ${year} | רמת גימור: ${gimur || 'סטנדרט'}`;
     document.getElementById('resCategoryTag').innerText = category;
 
     document.getElementById('resTestDate').innerText = details.tokef_dt || details.mivchan_acharon_dt || 'לא צוין';
@@ -880,8 +908,8 @@
     
     const engineHp = modelInfo.koah_sus ? `${modelInfo.koah_sus} כ"ס` : '';
     const engineCc = modelInfo.nefah_manoa ? `${modelInfo.nefah_manoa} סמ"ק` : '';
-    const fuel = modelInfo.delek_nm || details.sug_delek_nm || 'בנזין/דיזל';
-    document.getElementById('resEngine').innerText = [fuel, engineCc, engineHp].filter(Boolean).join(' | ') || 'סטנדרטי';
+    const fuel = modelInfo.delek_nm || details.sug_delek_nm || (modelInfo.technologiat_hanaa_nm || 'בנזין/חשמל');
+    document.getElementById('resEngine').innerText = [fuel, engineCc, engineHp].filter(Boolean).join(' | ') || 'חשמלי/בנזין';
 
     document.getElementById('resWeight').innerText = (details.mishkal_kolel || modelInfo.mishkal_kolel) ? `${details.mishkal_kolel || modelInfo.mishkal_kolel} ק"ג` : '—';
 
@@ -914,13 +942,12 @@
     document.getElementById('resultCard').style.display = 'flex';
   }
 
-  // Official Levi Itzhak Valuation Model
   function computeLeviItzhakValuation(data) {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
 
-    let year = Number(data.details.shnat_yitzur || 2018);
+    let year = Number(data.details.shnat_yitzur || data.modelInfo.shnat_yitzur || 2021);
     let regMonth = 1;
     const regDt = data.details.rishum_rishon_dt || '';
     if (regDt.length >= 7) {
@@ -929,8 +956,7 @@
 
     let yearsOnRoad = Math.max(0.5, (currentYear - year) + ((currentMonth - regMonth) / 12.0));
 
-    // Base MSRP by Segment
-    let baseMSRP = 135000;
+    let baseMSRP = 145000; // Electric SUV (Seres, MG, Geely) or Crossover
     let deprecCurve = [0.15, 0.14, 0.13, 0.12, 0.12, 0.11, 0.11, 0.10, 0.10, 0.09];
 
     if (data.category.includes('משאית') || data.category.includes('כבד')) {
@@ -953,10 +979,8 @@
 
     let basePrice = Math.max(8500, Math.round(price / 500) * 500);
 
-    // 1. Month of registration (+0.5% per month above January)
     const monthAdjPct = Number(((regMonth - 1) * 0.5).toFixed(1));
 
-    // 2. Ownership Deduction (Levi Itzhak standard)
     const own = data.ownership || '';
     let ownerPct = 0.0;
     let ownerLabel = 'פרטי';
@@ -978,7 +1002,6 @@
       ownerLabel = 'ממשלתי / משטרה';
     }
 
-    // 3. Progressive Mileage Penalty
     const km = Number(data.mileage || 0);
     const annualAvg = (data.category.includes('משאית') || data.category.includes('מסחרי')) ? 32000 : 16500;
     const expectedKm = Math.round(annualAvg * yearsOnRoad);
@@ -1006,11 +1029,9 @@
       }
     }
 
-    // Total weighting factor
     const totalFactor = Math.max(0.35, 1.0 + (monthAdjPct / 100.0) + (ownerPct / 100.0) + (kmPct / 100.0));
     let leviPrice = Math.max(6000, Math.round((basePrice * totalFactor) / 500) * 500);
 
-    // Yad2 Real Market Spread
     let quickSale = Math.max(4500, Math.round((leviPrice * 0.80) / 500) * 500);
     let retail = Math.round((leviPrice * 1.08) / 500) * 500;
 
@@ -1036,7 +1057,7 @@
     const km = Number(data.mileage || 0);
 
     if (km >= 250000) {
-      notes.push(`הרכב עבר ${km.toLocaleString()} ק"מ (מעל רבע מיליון ק"מ). לפי תקנון השמאות שחיקת המכלולים חריגה ומחירי הסגירה ביד2 צונחים ל-${val.quickSale.toLocaleString()} ₪.`);
+      notes.push(`הרכב עבר ${km.toLocaleString()} ק"מ. מחירי הסגירה ביד2 צונחים לאזור ה-${val.quickSale.toLocaleString()} ₪.`);
     } else if (km >= 200000) {
       notes.push(`קילומטראז' גבוה (${km.toLocaleString()} ק"מ) — מחייב בדיקת היסטוריית טיפולים יסודית.`);
     }
@@ -1070,7 +1091,7 @@
   }
 
   function renderRecents() {
-    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '["36479701", "5944155"]');
+    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '["64802003", "36479701", "5944155"]');
     const container = document.getElementById('recentsRow');
     container.innerHTML = '<span class="recent-label">אחרונים:</span>';
     recents.forEach(p => {
