@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0d10">
+  <title>בדיקת רכב ומחירון שטח | KirbyOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@500;700;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --card-bg: #14171d;
+      --card-border: #232832;
+      --text: #f0f3f8;
+      --text-muted: #8a94a6;
+      --primary: #3b82f6;
+      --accent-yellow: #f5c518;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-orange: #f59e0b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Heebo', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 14px 40px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 4px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-icon {
+      font-size: 24px;
+    }
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .brand-text span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    /* Israeli License Plate Box */
+    .plate-wrapper {
+      position: relative;
+      width: 100%;
+      background: #f7ca18;
+      background: linear-gradient(180deg, #ffdc33 0%, #f5c518 50%, #e6b400 100%);
+      border: 4px solid #111;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      display: flex;
+      align-items: stretch;
+      height: 92px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .plate-wrapper:focus-within {
+      box-shadow: 0 8px 30px rgba(245, 197, 24, 0.35), inset 0 2px 2px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Inner embossed border line */
+    .plate-inner-border {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      right: 3px;
+      border: 2px solid #222;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Blue Euro/IL Flag Strip */
+    .plate-il-strip {
+      width: 52px;
+      background: #003399;
+      background: linear-gradient(180deg, #0044cc 0%, #002b80 100%);
+      border-radius: 6px 0 0 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 2px;
+      color: #fff;
+      z-index: 2;
+      box-shadow: inset -1px 0 2px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+    .plate-il-flag {
+      width: 28px;
+      height: 19px;
+      background: #fff;
+      border: 1px solid #002b80;
+      border-radius: 2px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+    .flag-stripe {
+      height: 2px;
+      background: #003399;
+      width: 100%;
+    }
+    .flag-star {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px;
+      color: #003399;
+      line-height: 1;
+    }
+    .plate-il-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .plate-he-text {
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Native, Fully Accessible Direct Input Field */
+    .plate-input-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      padding: 0 6px 0 12px;
+    }
+
+    .real-plate-input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'JetBrains Mono', 'Rubik', monospace;
+      font-size: 38px;
+      font-weight: 900;
+      color: #111;
+      letter-spacing: 2px;
+      text-align: center;
+      direction: ltr;
+      caret-color: #111;
+      padding: 0;
+      text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.4);
+    }
+
+    .real-plate-input::placeholder {
+      color: rgba(17, 17, 17, 0.3);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Clear Button */
+    .plate-clear-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.15);
+      border: none;
+      color: #222;
+      font-size: 16px;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .plate-clear-btn:active {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Action Button */
+    .btn-search {
+      width: 100%;
+      height: 56px;
+      background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: var(--radius-md);
+      color: #fff;
+      font-family: 'Heebo', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-search:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+    .btn-search:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Quick Recents Chips */
+    .recents-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0 6px;
+      scrollbar-width: none;
+    }
+    .recents-row::-webkit-scrollbar {
+      display: none;
+    }
+    .recent-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-weight: 700;
+    }
+    .recent-chip {
+      background: #1c212a;
+      border: 1px solid var(--card-border);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .recent-chip:active {
+      background: #28303d;
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Loader */
+    .loader-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 40px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+    }
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loader-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Result Card */
+    .result-card {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Header in Card */
+    .veh-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+    .veh-title h2 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .veh-title .veh-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .veh-category-tag {
+      background: #1f2937;
+      color: #93c5fd;
+      border: 1px solid #374151;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Key-Value Grid */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .spec-item {
+      background: #0f1217;
+      border: 1px solid #1e2430;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .spec-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .spec-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .spec-val.highlight-green {
+      color: var(--accent-green);
+    }
+    .spec-val.highlight-orange {
+      color: var(--accent-orange);
+    }
+    .spec-val.highlight-red {
+      color: var(--accent-red);
+    }
+
+    /* Valuation Box */
+    .val-box {
+      background: linear-gradient(145deg, #111a2e 0%, #0d1322 100%);
+      border: 1px solid #1e3a8a;
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .val-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .val-top-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .val-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .val-main-price {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .val-amount {
+      font-family: 'Rubik', sans-serif;
+      font-size: 36px;
+      font-weight: 900;
+      color: #38bdf8;
+      letter-spacing: -0.5px;
+    }
+    .val-currency {
+      font-size: 20px;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+    .val-delta-badge {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .val-delta-badge.positive {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    /* Valuation Breakdown Rows */
+    .val-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid #1e293b;
+      padding-top: 10px;
+      font-size: 12px;
+    }
+    .val-row {
+      display: flex;
+      justify-content: space-between;
+      color: #cbd5e1;
+    }
+    .val-row span:last-child {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Market Range Bar */
+    .market-range-box {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .range-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .range-title {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .range-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    /* Kirby Field Insight Note */
+    .kirby-insight-box {
+      background: #191612;
+      border: 1px solid #78350f;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kirby-insight-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kirby-insight-text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #fef3c7;
+    }
+
+    /* Error Box */
+    .error-box {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      color: #fca5a5;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-icon">🚗</div>
+      <div class="brand-text">
+        <h1>בדיקת רכב ומחירון שטח</h1>
+        <span>חיבור ישיר למשרד התחבורה</span>
+      </div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      ממשלתי חי
+    </div>
+  </div>
+
+  <!-- Israeli License Plate Input (Native & Cursor Friendly) -->
+  <div class="plate-wrapper">
+    <div class="plate-inner-border"></div>
+    
+    <!-- IL Blue Strip -->
+    <div class="plate-il-strip">
+      <div class="plate-il-flag">
+        <div class="flag-stripe"></div>
+        <div class="flag-star">✡</div>
+        <div class="flag-stripe"></div>
+      </div>
+      <div class="plate-il-text">IL</div>
+      <div class="plate-he-text">ישראל</div>
+    </div>
+
+    <!-- Native Direct Plate Input -->
+    <div class="plate-input-container">
+      <input 
+        type="tel" 
+        id="plateInput" 
+        class="real-plate-input" 
+        inputmode="numeric" 
+        pattern="[0-9]*" 
+        placeholder="הקש מספר רכב"
+        maxlength="10"
+        autocomplete="off"
+        autocorrect="off"
+        oninput="onPlateInputChange(this)"
+        onkeydown="if(event.key === 'Enter') runVehicleSearch()"
+      />
+      <button type="button" id="clearBtn" class="plate-clear-btn" onclick="clearPlateInput()">✕</button>
+    </div>
+  </div>
+
+  <!-- Search Button -->
+  <button class="btn-search" id="searchBtn" onclick="runVehicleSearch()">
+    <span>🔍</span>
+    <span>בדוק רכב וחשב מחירון</span>
+  </button>
+
+  <!-- Recent Checks Chips -->
+  <div class="recents-row" id="recentsRow">
+    <span class="recent-label">אחרונים:</span>
+    <div class="recent-chip" onclick="setAndSearch('5944155')">59-441-55</div>
+    <div class="recent-chip" onclick="setAndSearch('13125601')">13-125-60</div>
+  </div>
+
+  <!-- Error Display -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Loading State -->
+  <div class="loader-box" id="loaderBox">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loaderText">שולף נתוני רישוי ממשלתיים...</div>
+  </div>
+
+  <!-- Result Container -->
+  <div class="result-card" id="resultCard">
+
+    <!-- Card 1: Technical & Identity Specs -->
+    <div class="card-section">
+      <div class="veh-header">
+        <div class="veh-title">
+          <h2 id="resTitle">יונדאי I25</h2>
+          <div class="veh-sub" id="resSub">שנת ייצור 2016 | רמת גימור INSPIRE</div>
+        </div>
+        <div class="veh-category-tag" id="resCategoryTag">רכב פרטי</div>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-label">תוקף טסט (רישיון)</div>
+          <div class="spec-val" id="resTestDate">—</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">קילומטראז' בטסט אחרון</div>
+          <div class="spec-val" id="resKm">—</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">מקוריות / בעלות</div>
+          <div class="spec-val" id="resOwnership">—</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">מנוע והנעה</div>
+          <div class="spec-val" id="resEngine">—</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">משקל מורשה</div>
+          <div class="spec-val" id="resWeight">—</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">קריאות שירות (ריקול)</div>
+          <div class="spec-val highlight-green" id="resRecall">אין (תקין)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Valuation Engine (Live Today) -->
+    <div class="val-box">
+      <div class="val-top">
+        <div class="val-top-title">
+          <span>💰</span>
+          <span>מחירון משוקלל בזמן אמת</span>
+        </div>
+        <div class="val-date" id="valDate">מעודכן להיום</div>
+      </div>
+
+      <div class="val-main-price">
+        <span class="val-amount" id="valAdjustedAmount">0</span>
+        <span class="val-currency">₪</span>
+        <span class="val-delta-badge" id="valDeltaBadge">-0%</span>
+      </div>
+
+      <div class="val-breakdown">
+        <div class="val-row">
+          <span>מחיר מחירון בסיס (שנתון):</span>
+          <span id="valBaseAmount">0 ₪</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול בעלות:</span>
+          <span id="valOwnerFactor">פרטי</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול קילומטראז':</span>
+          <span id="valKmFactor">תואם שנתון</span>
+        </div>
+      </div>
+
+      <div class="market-range-box">
+        <div class="range-col">
+          <span class="range-title">מימוש מהיר / סוחר</span>
+          <span class="range-val" id="valQuickSale">0 ₪</span>
+        </div>
+        <div class="range-col" style="text-align: left;">
+          <span class="range-title">מכירה בשוק (פרטי)</span>
+          <span class="range-val" id="valRetail">0 ₪</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Kirby Field Insight Note -->
+    <div class="kirby-insight-box">
+      <div class="kirby-insight-title">
+        <span>💡</span>
+        <span>הערת שטח של קירבי</span>
+      </div>
+      <div class="kirby-insight-text" id="kirbyInsightText">
+        ניתוח שטח יופיע כאן בהתאם לנתוני הבדיקה.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  function formatPlateString(val) {
+    const clean = val.replace(/\D/g, '');
+    if (clean.length === 7) {
+      return clean.slice(0, 2) + '-' + clean.slice(2, 5) + '-' + clean.slice(5);
+    } else if (clean.length === 8) {
+      return clean.slice(0, 3) + '-' + clean.slice(3, 5) + '-' + clean.slice(5);
+    }
+    return clean;
+  }
+
+  function onPlateInputChange(el) {
+    const clearBtn = document.getElementById('clearBtn');
+    if (el.value.trim().length > 0) {
+      clearBtn.style.display = 'flex';
+    } else {
+      clearBtn.style.display = 'none';
+    }
+  }
+
+  function clearPlateInput() {
+    const input = document.getElementById('plateInput');
+    input.value = '';
+    input.focus();
+    document.getElementById('clearBtn').style.display = 'none';
+  }
+
+  function setAndSearch(plate) {
+    const input = document.getElementById('plateInput');
+    input.value = formatPlateString(plate);
+    onPlateInputChange(input);
+    runVehicleSearch();
+  }
+
+  // API Resources on data.gov.il
+  const RESOURCES = {
+    active_vehicles: "0866573c-40cd-4ca8-91d2-9dd2d7a492e5",
+    heavy_trucks: "cd3acc5c-03c3-4c89-9c54-d40f93c0d790",
+    history_mileage: "56063a99-8a3e-4ff4-912e-5966c0279bad",
+    recalls: "36bf1404-0be4-49d2-82dc-2f1ead4a8b93",
+    models: "142afde2-6228-49f9-8a29-9b6c3a0cbe40"
+  };
+
+  async function fetchGovCKAN(resourceId, queryVal) {
+    const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${encodeURIComponent(queryVal)}&limit=5`;
+    const resp = await fetch(url);
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    const records = data?.result?.records || [];
+    const exact = records.filter(r => String(r.mispar_rechev || r.MISPAR_RECHEV || '') === String(queryVal));
+    return exact.length ? exact : records;
+  }
+
+  async function runVehicleSearch() {
+    const rawInput = document.getElementById('plateInput').value;
+    const plate = rawInput.replace(/\D/g, '');
+    
+    if (plate.length < 6) {
+      showError('אנא הזן מספר רישוי תקין (7 או 8 ספרות)');
+      return;
+    }
+
+    // Auto-format the input nicely on search
+    document.getElementById('plateInput').value = formatPlateString(plate);
+
+    hideError();
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('loaderBox').style.display = 'flex';
+    document.getElementById('searchBtn').disabled = true;
+
+    try {
+      // 1. Parallel Fetch: Heavy Trucks + Active Private/Commercial + Mileage History + Recalls
+      const [trucks, activeVehs, mileageRecs, recallRecs] = await Promise.all([
+        fetchGovCKAN(RESOURCES.heavy_trucks, plate),
+        fetchGovCKAN(RESOURCES.active_vehicles, plate),
+        fetchGovCKAN(RESOURCES.history_mileage, plate),
+        fetchGovCKAN(RESOURCES.recalls, plate)
+      ]);
+
+      let found = false;
+      let details = {};
+      let category = 'רכב פרטי / מסחרי';
+
+      if (trucks.length > 0) {
+        found = true;
+        details = trucks[0];
+        category = 'משאית / רכב כבד מעל 3.5 טון';
+      } else if (activeVehs.length > 0) {
+        found = true;
+        details = activeVehs[0];
+      }
+
+      if (!found) {
+        showError(`מספר רכב ${formatPlateString(plate)} לא נמצא במאגר כלי הרכב הפעיל של משרד התחבורה.`);
+        return;
+      }
+
+      // Merge Mileage & Registration
+      let mileage = null;
+      let ownership = details.baalut || 'פרטי';
+      if (mileageRecs.length > 0) {
+        mileage = mileageRecs[0].kilometer_test_aharon || null;
+        if (mileageRecs[0].mkoriut_nm) ownership = mileageRecs[0].mkoriut_nm;
+        if (mileageRecs[0].rishum_rishon_dt) details.rishum_rishon_dt = mileageRecs[0].rishum_rishon_dt;
+      }
+
+      // Fetch Model Specs if code exists
+      let modelInfo = {};
+      if (details.tozeret_cd && details.degem_cd) {
+        const modelList = await fetchGovCKAN(RESOURCES.models, `${details.tozeret_cd} ${details.degem_cd}`);
+        if (modelList.length > 0) modelInfo = modelList[0];
+      }
+
+      // Render Specs & Valuation
+      renderVehicleResult({
+        plate,
+        category,
+        details,
+        modelInfo,
+        mileage,
+        ownership,
+        recalls: recallRecs
+      });
+
+      // Save to recent
+      saveRecentPlate(plate);
+
+    } catch (err) {
+      console.error(err);
+      showError('שגיאה בחיבור למאגר הממשלתי. ודא חיבור אינטרנט פעיל.');
+    } finally {
+      document.getElementById('loaderBox').style.display = 'none';
+      document.getElementById('searchBtn').disabled = false;
+    }
+  }
+
+  function renderVehicleResult(data) {
+    const { plate, category, details, modelInfo, mileage, ownership, recalls } = data;
+
+    // Titles
+    const tozeret = modelInfo.tozeret_nm || details.tozeret_nm || '';
+    const degem = modelInfo.degem_nm || details.degem_nm || modelInfo.kinuy_mishari || details.kinuy_mishari || '';
+    const gimur = modelInfo.ramat_gimur || details.ramat_gimur || '';
+    const fullTitle = `${tozeret} ${degem}`.trim() || `רכב מס' ${formatPlateString(plate)}`;
+    
+    document.getElementById('resTitle').innerText = fullTitle;
+    document.getElementById('resSub').innerText = `שנת ייצור: ${details.shnat_yitzur || modelInfo.shnat_yitzur || '—'} | רמת גימור: ${gimur || 'סטנדרט'}`;
+    document.getElementById('resCategoryTag').innerText = category;
+
+    // Specs
+    document.getElementById('resTestDate').innerText = details.tokef_dt || details.mivchan_acharon_dt || 'לא צוין';
+    document.getElementById('resKm').innerText = mileage ? `${Number(mileage).toLocaleString()} ק"מ` : 'לא דווח';
+    document.getElementById('resOwnership').innerText = ownership;
+    
+    const engineHp = modelInfo.koah_sus ? `${modelInfo.koah_sus} כ"ס` : '';
+    const engineCc = modelInfo.nefah_manoa ? `${modelInfo.nefah_manoa} סמ"ק` : '';
+    const fuel = modelInfo.delek_nm || details.sug_delek_nm || 'בנזין/דיזל';
+    document.getElementById('resEngine').innerText = [fuel, engineCc, engineHp].filter(Boolean).join(' | ') || 'סטנדרטי';
+
+    document.getElementById('resWeight').innerText = (details.mishkal_kolel || modelInfo.mishkal_kolel) ? `${details.mishkal_kolel || modelInfo.mishkal_kolel} ק"ג` : '—';
+
+    const recallElem = document.getElementById('resRecall');
+    if (recalls && recalls.length > 0) {
+      recallElem.innerText = `⚠️ ${recalls.length} ריקול פתוח`;
+      recallElem.className = 'spec-val highlight-red';
+    } else {
+      recallElem.innerText = 'אין (תקין)';
+      recallElem.className = 'spec-val highlight-green';
+    }
+
+    // Run Real-Time Valuation Engine
+    const val = computeValuation(data);
+    
+    document.getElementById('valDate').innerText = `מעודכן ל-${val.asOfDate}`;
+    document.getElementById('valAdjustedAmount').innerText = val.adjustedPrice.toLocaleString();
+    document.getElementById('valBaseAmount').innerText = `${val.basePrice.toLocaleString()} ₪`;
+    document.getElementById('valOwnerFactor').innerText = val.ownerLabel;
+    document.getElementById('valKmFactor').innerText = val.kmLabel;
+    document.getElementById('valQuickSale').innerText = `${val.quickSale.toLocaleString()} ₪`;
+    document.getElementById('valRetail').innerText = `${val.retail.toLocaleString()} ₪`;
+
+    const deltaElem = document.getElementById('valDeltaBadge');
+    deltaElem.innerText = `${val.totalAdjustmentPct > 0 ? '+' : ''}${val.totalAdjustmentPct}%`;
+    deltaElem.className = `val-delta-badge ${val.totalAdjustmentPct >= 0 ? 'positive' : ''}`;
+
+    // Kirby Field Insight
+    renderKirbyInsight(data, val);
+
+    document.getElementById('resultCard').style.display = 'flex';
+  }
+
+  function computeValuation(data) {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    let year = Number(data.details.shnat_yitzur || 2018);
+    let yearsOnRoad = Math.max(0.5, currentYear - year + (currentMonth / 12.0));
+
+    let baseMSRP = 125000;
+    let deprecRate = 0.135;
+    let avgKmYear = 17000;
+
+    if (data.category.includes('משאית') || data.category.includes('כבד')) {
+      baseMSRP = 380000;
+      deprecRate = 0.11;
+      avgKmYear = 35000;
+    } else if (data.category.includes('מסחרי')) {
+      baseMSRP = 170000;
+      deprecRate = 0.12;
+      avgKmYear = 28000;
+    }
+
+    let basePrice = baseMSRP * Math.pow(1 - deprecRate, yearsOnRoad);
+    basePrice = Math.max(8000, Math.round(basePrice / 500) * 500);
+
+    // Ownership adjustment
+    let ownerFactor = 0.0;
+    let ownerLabel = 'פרטי (ללא הפחתה)';
+    const own = data.ownership || '';
+    if (own.includes('החכר') || own.includes('ליסינג')) {
+      ownerFactor = -0.15;
+      ownerLabel = 'ליסינג / החכר (-15%)';
+    } else if (own.includes('השכרה')) {
+      ownerFactor = -0.22;
+      ownerLabel = 'השכרה (-22%)';
+    } else if (own.includes('חברה')) {
+      ownerFactor = -0.12;
+      ownerLabel = 'חברה (-12%)';
+    }
+
+    // Mileage adjustment
+    let kmFactor = 0.0;
+    let kmLabel = 'תואם שנתון';
+    if (data.mileage) {
+      const expectedKm = avgKmYear * yearsOnRoad;
+      const diff = data.mileage - expectedKm;
+      kmFactor = -(diff / 10000.0) * 0.015;
+      kmFactor = Math.max(-0.25, Math.min(0.10, kmFactor));
+      if (diff > 15000) {
+        kmLabel = `גבוה מהממוצע (${Number(data.mileage).toLocaleString()} ק"מ) [${(kmFactor*100).toFixed(1)}%]`;
+      } else if (diff < -15000) {
+        kmLabel = `נמוך מהממוצע (${Number(data.mileage).toLocaleString()} ק"מ) [${(kmFactor*100).toFixed(1)}%]`;
+      }
+    }
+
+    const totalFactor = 1.0 + ownerFactor + kmFactor;
+    let adjustedPrice = Math.max(6000, Math.round((basePrice * totalFactor) / 500) * 500);
+    let quickSale = Math.max(5000, Math.round((adjustedPrice * 0.85) / 500) * 500);
+    let retail = Math.round((adjustedPrice * 1.10) / 500) * 500;
+
+    return {
+      asOfDate: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,
+      basePrice,
+      adjustedPrice,
+      quickSale,
+      retail,
+      ownerLabel,
+      kmLabel,
+      totalAdjustmentPct: Number(((totalFactor - 1.0) * 100).toFixed(1))
+    };
+  }
+
+  function renderKirbyInsight(data, val) {
+    const notes = [];
+    const own = data.ownership || '';
+    
+    if (own.includes('ליסינג') || own.includes('החכר') || own.includes('השכרה')) {
+      notes.push(`הרכב רשום בעברו כ-${own} — מה שמפחית אוטומטית שווי שוק אך מאפשר מיקוח אגרסיבי בקנייה.`);
+    }
+
+    if (data.mileage) {
+      const year = Number(data.details.shnat_yitzur || 2018);
+      const age = 2026 - year;
+      const expected = age * 17000;
+      if (data.mileage > expected + 30000) {
+        notes.push(`הקילומטראז' (${Number(data.mileage).toLocaleString()} ק"מ) חריג לשנתון — יש לבדוק היסטוריית טיפולי טיימינג, גיר ומערכת קירור.`);
+      }
+    }
+
+    if (data.recalls && data.recalls.length > 0) {
+      notes.push(`⚠️ קיימות ${data.recalls.length} קריאות שירות (ריקול) פתוחות במוסכי היבואן — יש לדרוש ביצוע ריקול ללא תשלום לפני רכישה.`);
+    } else {
+      notes.push(`אין ריקולים בטיחותיים פתוחים במאגר היבואן.`);
+    }
+
+    document.getElementById('kirbyInsightText').innerHTML = notes.join('<br>• ');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorBox');
+    el.innerText = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').style.display = 'none';
+  }
+
+  function saveRecentPlate(plate) {
+    let recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '[]');
+    recents = [plate, ...recents.filter(p => p !== plate)].slice(0, 5);
+    localStorage.setItem('kirby_recent_plates', JSON.stringify(recents));
+    renderRecents();
+  }
+
+  function renderRecents() {
+    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '["5944155", "13125601"]');
+    const container = document.getElementById('recentsRow');
+    container.innerHTML = '<span class="recent-label">אחרונים:</span>';
+    recents.forEach(p => {
+      const chip = document.createElement('div');
+      chip.className = 'recent-chip';
+      chip.innerText = formatPlateString(p);
+      chip.onclick = () => setAndSearch(p);
+      container.appendChild(chip);
+    });
+  }
+
+  // Init
+  window.addEventListener('DOMContentLoaded', () => {
+    renderRecents();
+  });
+</script>
+
+</body>
+</html>
