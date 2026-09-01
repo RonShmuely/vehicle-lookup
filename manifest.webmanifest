@@ -1,0 +1,32 @@
+{
+  "name": "בדיקת רכב ומחירון שטח",
+  "short_name": "בדיקת רכב",
+  "description": "אפליקציה מתקדמת לבדיקת רכב, היסטוריית בעלות, מחירון שטח וניתוח כדאיות עסקה בזמן אמת",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

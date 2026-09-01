@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Deep Obsidian / OLED Dark Background -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141923"/>
+      <stop offset="50%" stop-color="#0a0c10"/>
+      <stop offset="100%" stop-color="#030406"/>
+    </linearGradient>
+
+    <!-- Warm Golden Ambient Radial Glow behind Plate -->
+    <radialGradient id="ambientGlow" cx="50%" cy="58%" r="55%">
+      <stop offset="0%" stop-color="#f5c518" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Metallic Squircle Border -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#1e293b" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#f5c518" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Car Body / Hood 3D Gradient with Defined Contrast -->
+    <linearGradient id="carBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#33435c"/>
+      <stop offset="40%" stop-color="#1c2637"/>
+      <stop offset="100%" stop-color="#101722"/>
+    </linearGradient>
+
+    <!-- Car Windshield / Glass -->
+    <linearGradient id="windshieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#1d4ed8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0b1320" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Authentic Israeli Plate Yellow -->
+    <linearGradient id="plateYellow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffea70"/>
+      <stop offset="25%" stop-color="#f5c518"/>
+      <stop offset="80%" stop-color="#e09e00"/>
+      <stop offset="100%" stop-color="#c48300"/>
+    </linearGradient>
+
+    <!-- Plate Glass Shine -->
+    <linearGradient id="plateShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- IL Blue Strip -->
+    <linearGradient id="ilBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d63ed"/>
+      <stop offset="100%" stop-color="#0f3da8"/>
+    </linearGradient>
+
+    <!-- Headlight Beam Cones -->
+    <linearGradient id="headlightBeamLeft" x1="50%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.75"/>
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="headlightBeamRight" x1="50%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.75"/>
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Badge Blue Core -->
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="shadowPlate" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.9"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#f5c518" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="shadowBadge" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#3b82f6" flood-opacity="0.6"/>
+    </filter>
+
+    <filter id="laserGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- iOS / Android Squircle Base Canvas -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="115" fill="url(#ambientGlow)"/>
+
+  <!-- Precision Metallic Outer Border -->
+  <rect x="3.5" y="3.5" width="505" height="505" rx="112" fill="none" stroke="url(#borderGrad)" stroke-width="4.5"/>
+
+  <!-- ==================== 1. CAR FRONT VIEW & SILHOUETTE ==================== -->
+  <g id="car-silhouette" transform="translate(0, 30)">
+    <!-- Car Cabin / Roofline / Pillars -->
+    <path d="M 140 160 
+             C 170 75, 210 46, 256 46 
+             C 302 46, 342 75, 372 160 
+             Z" 
+          fill="url(#carBodyGrad)" stroke="#3b82f6" stroke-width="2.5"/>
+
+    <!-- Windshield with sharp glowing blue outline -->
+    <path d="M 152 155 
+             C 176 86, 212 60, 256 60 
+             C 300 60, 336 86, 360 155 
+             C 325 145, 288 140, 256 140 
+             C 224 140, 187 145, 152 155 Z" 
+          fill="url(#windshieldGrad)" stroke="#38bdf8" stroke-width="2"/>
+
+    <!-- Rearview Mirrors -->
+    <ellipse cx="118" cy="148" rx="18" ry="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2" transform="rotate(-15 118 148)"/>
+    <ellipse cx="394" cy="148" rx="18" ry="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2" transform="rotate(15 394 148)"/>
+
+    <!-- Car Hood & Front Fenders -->
+    <path d="M 80 242 
+             C 75 180, 105 158, 140 158
+             L 372 158
+             C 407 158, 437 180, 432 242
+             C 385 258, 322 265, 256 265
+             C 190 265, 127 258, 80 242 Z" 
+          fill="url(#carBodyGrad)" stroke="#475569" stroke-width="2.5"/>
+
+    <!-- Lower Bumper / Air Dam Outer Definition -->
+    <path d="M 68 255 C 65 310, 85 350, 110 375 L 125 350 C 95 330, 80 290, 80 255 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <path d="M 444 255 C 447 310, 427 350, 402 375 L 387 350 C 417 330, 432 290, 432 255 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Hood Character Accent Lines -->
+    <path d="M 175 158 L 195 248" stroke="#38bdf8" stroke-width="2.5" opacity="0.7"/>
+    <path d="M 337 158 L 317 248" stroke="#38bdf8" stroke-width="2.5" opacity="0.7"/>
+
+    <!-- Powerful Projector Headlight Beams (Shooting downwards & outwards) -->
+    <polygon points="105,210 15,385 165,345" fill="url(#headlightBeamLeft)"/>
+    <polygon points="407,210 497,385 347,345" fill="url(#headlightBeamRight)"/>
+
+    <!-- Sleek Futuristic LED Laser Headlights (Glowing) -->
+    <g filter="url(#laserGlow)">
+      <!-- Left Headlight Assembly -->
+      <path d="M 82 210 Q 110 188 145 198 Q 115 220 82 210 Z" fill="#38bdf8"/>
+      <ellipse cx="115" cy="204" rx="20" ry="4.5" fill="#ffffff"/>
+
+      <!-- Right Headlight Assembly -->
+      <path d="M 430 210 Q 402 188 367 198 Q 397 220 430 210 Z" fill="#38bdf8"/>
+      <ellipse cx="397" cy="204" rx="20" ry="4.5" fill="#ffffff"/>
+    </g>
+
+    <!-- Front Grille Mesh Texture Area (Behind Plate) -->
+    <rect x="150" y="225" width="212" height="35" rx="6" fill="#0b0e14" stroke="#2563eb" stroke-width="2"/>
+  </g>
+
+  <!-- ==================== 2. HERO ISRAELI LICENSE PLATE ==================== -->
+  <g id="license-plate" transform="translate(51, 260)" filter="url(#shadowPlate)">
+    <!-- Outer Heavy Embossed Black Frame -->
+    <rect x="0" y="0" width="410" height="150" rx="20" fill="#080a0d" stroke="#2a323f" stroke-width="2.5"/>
+    
+    <!-- Inner Radiant Yellow Plate -->
+    <rect x="5" y="5" width="400" height="140" rx="16" fill="url(#plateYellow)" stroke="#11141a" stroke-width="4"/>
+
+    <!-- Blue Israeli Euro-Strip (Left) -->
+    <g id="blue-strip">
+      <clipPath id="blueClip">
+        <rect x="5" y="5" width="62" height="140" rx="16"/>
+      </clipPath>
+      <rect x="5" y="5" width="70" height="140" fill="url(#ilBlue)" clip-path="url(#blueClip)"/>
+      <!-- Separation Line -->
+      <line x1="68" y1="5" x2="68" y2="145" stroke="#11141a" stroke-width="3.5"/>
+      
+      <!-- Flag Elements: Crisp White Flag Box with High Contrast Blue Stripes & Single Hexagram -->
+      <g transform="translate(10, 15)">
+        <!-- Crisp White Card Background -->
+        <rect x="0" y="0" width="48" height="32" rx="3" fill="#ffffff"/>
+        <!-- Top & Bottom Official Blue Stripes -->
+        <rect x="0" y="3" width="48" height="4.5" fill="#0038b8"/>
+        <rect x="0" y="24.5" width="48" height="4.5" fill="#0038b8"/>
+        
+        <!-- Clean Solid Geometric Star of David (Center X=24, Y=16) -->
+        <polygon points="24,8 26.5,13.5 32,13.5 27.5,17 29.5,22.5 24,19 18.5,22.5 20.5,17 16,13.5 21.5,13.5" fill="#0038b8"/>
+      </g>
+
+      <!-- Bold, Cleanly Centered "IL" Country Code -->
+      <text x="34" y="100" 
+            font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Arial, sans-serif" 
+            font-size="32" 
+            font-weight="900" 
+            fill="#ffffff" 
+            letter-spacing="1" 
+            text-anchor="middle">IL</text>
+
+      <!-- Micro Star Accent -->
+      <circle cx="34" cy="120" r="3.5" fill="#ffffff"/>
+    </g>
+
+    <!-- License Plate Digits: Israeli Format "123-45-678" with Authentic Hyphen Blocks -->
+    <g fill="#111317" font-family="'JetBrains Mono', 'Rubik', -apple-system, sans-serif" font-weight="900" font-size="52" letter-spacing="1">
+      <!-- 3 Digits: 123 -->
+      <text x="82" y="95" text-anchor="start">123</text>
+      
+      <!-- Authentic Hyphen Bar 1 -->
+      <rect x="180" y="80" width="14" height="6" rx="2" fill="#111317"/>
+      
+      <!-- 2 Digits: 45 -->
+      <text x="204" y="95" text-anchor="start">45</text>
+      
+      <!-- Authentic Hyphen Bar 2 -->
+      <rect x="268" y="80" width="14" height="6" rx="2" fill="#111317"/>
+      
+      <!-- 3 Digits: 678 -->
+      <text x="292" y="95" text-anchor="start">678</text>
+    </g>
+
+    <!-- Glass Glare Diagonal Reflection -->
+    <rect x="5" y="5" width="400" height="140" rx="16" fill="url(#plateShine)" pointer-events="none"/>
+  </g>
+
+  <!-- ==================== 3. FLOATING INSPECTION / VALUATION BADGE ==================== -->
+  <g id="valuation-badge" transform="translate(375, 360)" filter="url(#shadowBadge)">
+    <!-- Outer Heavy Blue Ring -->
+    <circle cx="45" cy="45" r="44" fill="#080c14" stroke="#3b82f6" stroke-width="4"/>
+    <!-- Core Blue Gradient -->
+    <circle cx="45" cy="45" r="38" fill="url(#badgeGrad)"/>
+    
+    <!-- Magnifier Tool -->
+    <circle cx="38" cy="36" r="20" fill="none" stroke="#ffffff" stroke-width="4.5"/>
+    <line x1="53" y1="51" x2="68" y2="66" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"/>
+    
+    <!-- Golden Verified Checkmark -->
+    <path d="M 28 36 L 36 44 L 50 28" fill="none" stroke="#f5c518" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Glint -->
+    <circle cx="31" cy="28" r="2.5" fill="#ffffff"/>
+  </g>
+</svg>
