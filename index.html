@@ -1516,161 +1516,434 @@
   }
 
   // ===================================================================
-  // ULTRA-RELIABLE DUAL-MODE ISRAELI LICENSE PLATE OCR ENGINE
+  // PLATE-OCR ENGINE v2 — ground-up rebuild (2026-09-02)
+  // EXIF-safe load → grid-based plate localization (yellow mask /
+  // dark-plate contrast mask, connected-component bounding box) →
+  // Bradley adaptive threshold (integral image, lighting-immune) →
+  // multi-region multi-variant Tesseract passes with hard digit
+  // whitelist, per-candidate scoring and early exit.
   // ===================================================================
+
+  const PlateOCR = {
+    worker: null,
+    workerLoading: null,
+    OVERALL_DEADLINE_MS: 32000,
+
+    // ---------- Tesseract lifecycle ----------
+    async ensureLib() {
+      if (typeof Tesseract !== 'undefined') return;
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('tesseract-cdn-load-failed'));
+        document.head.appendChild(s);
+      });
+      if (typeof Tesseract === 'undefined') throw new Error('tesseract-unavailable');
+    },
+
+    async getWorker() {
+      if (this.worker) return this.worker;
+      if (!this.workerLoading) {
+        this.workerLoading = (async () => {
+          await this.ensureLib();
+          const w = await Tesseract.createWorker('eng', 1);
+          await w.setParameters({
+            tessedit_char_whitelist: '0123456789',
+            classify_bln_numeric_mode: '1'
+          });
+          this.worker = w;
+          return w;
+        })().catch(err => { this.workerLoading = null; throw err; });
+      }
+      return this.workerLoading;
+    },
+
+    async resetWorker() {
+      const w = this.worker;
+      this.worker = null;
+      this.workerLoading = null;
+      if (w) { try { await w.terminate(); } catch (e) { /* already dead */ } }
+    },
+
+    // ---------- Image loading (EXIF-orientation safe) ----------
+    async loadImage(file) {
+      if (typeof createImageBitmap === 'function') {
+        try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+        catch (e) { /* older Safari: options object unsupported */ }
+        try { return await createImageBitmap(file); } catch (e) { /* fall through */ }
+      }
+      return await new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image-decode-failed')); };
+        img.src = url;
+      });
+    },
+
+    toCanvas(src, maxDim) {
+      const sw = src.width, sh = src.height;
+      if (!sw || !sh) throw new Error('empty-image');
+      const scale = Math.min(1, maxDim / Math.max(sw, sh));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(sw * scale));
+      c.height = Math.max(1, Math.round(sh * scale));
+      c.getContext('2d', { willReadFrequently: true }).drawImage(src, 0, 0, c.width, c.height);
+      return c;
+    },
+
+    // ---------- Plate localization ----------
+    // Grid-cell mask + largest 4-connected component → bounding box.
+    // kind: 'yellow' (road plate) | 'dark' (tzama black/brown plate).
+    locatePlate(canvas, kind) {
+      const w = canvas.width, h = canvas.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      let data;
+      try { data = ctx.getImageData(0, 0, w, h).data; }
+      catch (e) { return null; }
+
+      const cell = 12;
+      const gw = Math.ceil(w / cell), gh = Math.ceil(h / cell);
+      const nCells = gw * gh;
+      const yellowCnt = new Uint16Array(nCells);
+      const totalCnt = new Uint16Array(nCells);
+      const lumSum = new Float32Array(nCells);
+      const lumMin = new Float32Array(nCells).fill(255);
+      const lumMax = new Float32Array(nCells);
+
+      for (let y = 0; y < h; y += 2) {
+        const gy = (y / cell) | 0;
+        const rowBase = y * w;
+        for (let x = 0; x < w; x += 2) {
+          const gi = gy * gw + ((x / cell) | 0);
+          const i = (rowBase + x) * 4;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          totalCnt[gi]++;
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          lumSum[gi] += lum;
+          if (lum < lumMin[gi]) lumMin[gi] = lum;
+          if (lum > lumMax[gi]) lumMax[gi] = lum;
+          // Generous yellow gate: tolerates shade, sodium light, sensor WB.
+          if (r > 95 && g > 70 && b < r * 0.85 && (r + g) > b * 2.25) yellowCnt[gi]++;
+        }
+      }
+
+      const mask = new Uint8Array(nCells);
+      for (let gi = 0; gi < nCells; gi++) {
+        if (!totalCnt[gi]) continue;
+        if (kind === 'yellow') {
+          if (yellowCnt[gi] / totalCnt[gi] > 0.34) mask[gi] = 1;
+        } else {
+          const avg = lumSum[gi] / totalCnt[gi];
+          // Dark plate body with bright digits => low mean, high span.
+          if (avg < 110 && (lumMax[gi] - lumMin[gi]) > 55) mask[gi] = 1;
+        }
+      }
+
+      // Largest 4-connected component over mask cells (iterative BFS).
+      const seen = new Uint8Array(nCells);
+      let best = null;
+      const queue = new Int32Array(nCells);
+      for (let start = 0; start < nCells; start++) {
+        if (!mask[start] || seen[start]) continue;
+        let head = 0, tail = 0;
+        queue[tail++] = start; seen[start] = 1;
+        let minGx = gw, maxGx = -1, minGy = gh, maxGy = -1, size = 0;
+        while (head < tail) {
+          const cur = queue[head++];
+          size++;
+          const cx = cur % gw, cy = (cur / gw) | 0;
+          if (cx < minGx) minGx = cx;
+          if (cx > maxGx) maxGx = cx;
+          if (cy < minGy) minGy = cy;
+          if (cy > maxGy) maxGy = cy;
+          if (cx > 0 && mask[cur - 1] && !seen[cur - 1]) { seen[cur - 1] = 1; queue[tail++] = cur - 1; }
+          if (cx < gw - 1 && mask[cur + 1] && !seen[cur + 1]) { seen[cur + 1] = 1; queue[tail++] = cur + 1; }
+          if (cy > 0 && mask[cur - gw] && !seen[cur - gw]) { seen[cur - gw] = 1; queue[tail++] = cur - gw; }
+          if (cy < gh - 1 && mask[cur + gw] && !seen[cur + gw]) { seen[cur + gw] = 1; queue[tail++] = cur + gw; }
+        }
+        if (!best || size > best.size) best = { size, minGx, maxGx, minGy, maxGy };
+      }
+      if (!best || best.size < 6) return null;
+
+      const bw = (best.maxGx - best.minGx + 1) * cell;
+      const bh = (best.maxGy - best.minGy + 1) * cell;
+      const aspect = bw / Math.max(1, bh);
+      // Sanity: road plate is a wide strip; tzama plate is squarer (2 rows).
+      if (kind === 'yellow' && (aspect < 1.4 || aspect > 10)) return null;
+      if (kind === 'dark' && (aspect < 0.6 || aspect > 6)) return null;
+      if (bw * bh < w * h * 0.004) return null; // too tiny to hold digits
+
+      const margin = Math.round(cell * 1.5);
+      return {
+        x: Math.max(0, best.minGx * cell - margin),
+        y: Math.max(0, best.minGy * cell - margin),
+        w: Math.min(w - Math.max(0, best.minGx * cell - margin), bw + margin * 2),
+        h: Math.min(h - Math.max(0, best.minGy * cell - margin), bh + margin * 2)
+      };
+    },
+
+    centerBand(canvas) {
+      // Middle 70% x 55% — where a hand-aimed plate photo lands.
+      const w = canvas.width, h = canvas.height;
+      return {
+        x: Math.round(w * 0.15), y: Math.round(h * 0.225),
+        w: Math.round(w * 0.70), h: Math.round(h * 0.55)
+      };
+    },
+
+    cropRegion(canvas, rect, targetH) {
+      const rx = Math.max(0, Math.round(rect.x));
+      const ry = Math.max(0, Math.round(rect.y));
+      const rw = Math.max(1, Math.min(canvas.width - rx, Math.round(rect.w)));
+      const rh = Math.max(1, Math.min(canvas.height - ry, Math.round(rect.h)));
+      const scale = Math.min(4, Math.max(1, targetH / rh));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(rw * scale));
+      c.height = Math.max(1, Math.round(rh * scale));
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(canvas, rx, ry, rw, rh, 0, 0, c.width, c.height);
+      return c;
+    },
+
+    // ---------- Pre-processing variants ----------
+    grayscaleOf(canvas) {
+      const w = canvas.width, h = canvas.height;
+      const data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+      const gray = new Uint8ClampedArray(w * h);
+      for (let p = 0, i = 0; p < gray.length; p++, i += 4) {
+        gray[p] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      }
+      return { gray, w, h };
+    },
+
+    grayToCanvas(gray, w, h) {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      const out = ctx.createImageData(w, h);
+      for (let p = 0, i = 0; p < gray.length; p++, i += 4) {
+        out.data[i] = out.data[i + 1] = out.data[i + 2] = gray[p];
+        out.data[i + 3] = 255;
+      }
+      ctx.putImageData(out, 0, 0);
+      return c;
+    },
+
+    // Bradley adaptive threshold via integral image — immune to lighting
+    // gradients and partial reflections that kill a single global cutoff.
+    bradley(canvas, invert) {
+      const { gray, w, h } = this.grayscaleOf(canvas);
+      const integ = new Float64Array((w + 1) * (h + 1));
+      for (let y = 0; y < h; y++) {
+        let rowSum = 0;
+        for (let x = 0; x < w; x++) {
+          rowSum += gray[y * w + x];
+          integ[(y + 1) * (w + 1) + (x + 1)] = integ[y * (w + 1) + (x + 1)] + rowSum;
+        }
+      }
+      const win = Math.max(15, (Math.min(w, h) / 6) | 0);
+      const half = win >> 1;
+      const T = 0.82; // pixel must be < 82% of local mean to be "ink"
+      const out = new Uint8ClampedArray(w * h);
+      for (let y = 0; y < h; y++) {
+        const y1 = Math.max(0, y - half), y2 = Math.min(h - 1, y + half);
+        for (let x = 0; x < w; x++) {
+          const x1 = Math.max(0, x - half), x2 = Math.min(w - 1, x + half);
+          const area = (x2 - x1 + 1) * (y2 - y1 + 1);
+          const sum = integ[(y2 + 1) * (w + 1) + (x2 + 1)] - integ[y1 * (w + 1) + (x2 + 1)]
+                    - integ[(y2 + 1) * (w + 1) + x1] + integ[y1 * (w + 1) + x1];
+          const src = gray[y * w + x];
+          const val = invert ? 255 - src : src;
+          const mean = invert ? 255 - (sum / area) : (sum / area);
+          out[y * w + x] = (val < mean * T) ? 0 : 255;
+        }
+      }
+      return this.grayToCanvas(out, w, h);
+    },
+
+    // Global Otsu threshold — best on clean, evenly lit shots.
+    otsu(canvas, invert) {
+      const { gray, w, h } = this.grayscaleOf(canvas);
+      const hist = new Uint32Array(256);
+      for (let p = 0; p < gray.length; p++) hist[gray[p]]++;
+      const total = gray.length;
+      let sumAll = 0;
+      for (let t = 0; t < 256; t++) sumAll += t * hist[t];
+      let sumB = 0, wB = 0, maxVar = 0, thresh = 127;
+      for (let t = 0; t < 256; t++) {
+        wB += hist[t];
+        if (!wB) continue;
+        const wF = total - wB;
+        if (!wF) break;
+        sumB += t * hist[t];
+        const mB = sumB / wB, mF = (sumAll - sumB) / wF;
+        const v = wB * wF * (mB - mF) * (mB - mF);
+        if (v > maxVar) { maxVar = v; thresh = t; }
+      }
+      const out = new Uint8ClampedArray(w * h);
+      for (let p = 0; p < gray.length; p++) {
+        const ink = invert ? (gray[p] > thresh) : (gray[p] <= thresh);
+        out[p] = ink ? 0 : 255;
+      }
+      return this.grayToCanvas(out, w, h);
+    },
+
+    // Percentile contrast stretch — leaves binarization to Tesseract.
+    stretch(canvas) {
+      const { gray, w, h } = this.grayscaleOf(canvas);
+      const hist = new Uint32Array(256);
+      for (let p = 0; p < gray.length; p++) hist[gray[p]]++;
+      const total = gray.length;
+      let lo = 0, hi = 255, acc = 0;
+      for (let t = 0; t < 256; t++) { acc += hist[t]; if (acc >= total * 0.02) { lo = t; break; } }
+      acc = 0;
+      for (let t = 255; t >= 0; t--) { acc += hist[t]; if (acc >= total * 0.02) { hi = t; break; } }
+      const span = Math.max(1, hi - lo);
+      const out = new Uint8ClampedArray(w * h);
+      for (let p = 0; p < gray.length; p++) {
+        out[p] = Math.max(0, Math.min(255, ((gray[p] - lo) * 255 / span) | 0));
+      }
+      return this.grayToCanvas(out, w, h);
+    },
+
+    // ---------- Candidate extraction & scoring ----------
+    extractCandidates(text, mode) {
+      const lines = String(text || '').split('\n')
+        .map(l => l.replace(/\D/g, ''))
+        .filter(l => l.length > 0);
+      const all = lines.join('');
+      const out = [];
+      if (mode === 'tzama') {
+        // Two stacked rows (e.g. "117" over "642") → join adjacent lines.
+        for (let i = 0; i + 1 < lines.length; i++) {
+          const joined = lines[i] + lines[i + 1];
+          if (joined.length >= 5 && joined.length <= 6) out.push(joined);
+        }
+        for (const l of lines) if (l.length >= 5 && l.length <= 6) out.push(l);
+        if (all.length >= 5 && all.length <= 6) out.push(all);
+        if (all.length === 7) { out.push(all.slice(0, 6)); out.push(all.slice(1)); }
+      } else {
+        for (const l of lines) if (l.length === 7 || l.length === 8) out.push(l);
+        if (all.length === 7 || all.length === 8) out.push(all);
+        if (all.length > 8) {
+          out.push(all.slice(0, 8));
+          out.push(all.slice(-8));
+          out.push(all.slice(0, 7));
+          out.push(all.slice(-7));
+        }
+      }
+      return [...new Set(out)];
+    },
+
+    scoreCandidate(cand, conf, mode) {
+      let s = Math.max(0, Math.min(100, Number(conf) || 0));
+      if (mode === 'tzama') {
+        if (cand.length === 6) s += 100;
+        else if (cand.length === 5) s += 85;
+      } else {
+        if (cand.length === 8) s += 100;
+        else if (cand.length === 7) s += 94;
+      }
+      if (/^0{3,}/.test(cand)) s -= 40;        // leading-zero runs = border noise
+      if (/^(\d)\1+$/.test(cand)) s -= 70;     // one repeated digit = texture noise
+      return s;
+    },
+
+    // ---------- Orchestrator ----------
+    async recognize(file, mode, onStatus) {
+      const started = Date.now();
+      const deadline = () => Date.now() - started > this.OVERALL_DEADLINE_MS;
+      const say = (m) => { try { if (onStatus) onStatus(m); } catch (e) { /* UI only */ } };
+
+      say('טוען מנוע זיהוי...');
+      const worker = await this.getWorker();
+
+      say('מעבד תמונה...');
+      const src = await this.loadImage(file);
+      const full = this.toCanvas(src, 1600);
+      if (typeof src.close === 'function') { try { src.close(); } catch (e) { /* bitmap */ } }
+
+      // Region plan: located plate first (highest yield), then center band,
+      // then full frame. Each region carries its page-segmentation mode.
+      const regions = [];
+      const kind = mode === 'tzama' ? 'dark' : 'yellow';
+      const rect = this.locatePlate(full, kind);
+      if (rect) {
+        regions.push({ canvas: this.cropRegion(full, rect, 240), psm: mode === 'tzama' ? '6' : '7', tag: 'plate' });
+      }
+      regions.push({ canvas: this.cropRegion(full, this.centerBand(full), 400), psm: '6', tag: 'center' });
+      regions.push({ canvas: this.toCanvas(full, 1100), psm: '6', tag: 'full' });
+
+      const variantsFor = (regionCanvas) => [
+        { canvas: this.bradley(regionCanvas, mode === 'tzama'), tag: 'bradley' },
+        { canvas: this.stretch(regionCanvas), tag: 'stretch' },
+        { canvas: this.otsu(regionCanvas, mode === 'tzama'), tag: 'otsu' },
+        { canvas: this.bradley(regionCanvas, mode !== 'tzama'), tag: 'bradley-inv' }
+      ];
+
+      let best = null;
+      const consider = (cand, conf, provenance) => {
+        const score = this.scoreCandidate(cand, conf, mode);
+        if (!best || score > best.score) best = { plate: cand, score, conf, provenance };
+      };
+
+      let pass = 0;
+      outer:
+      for (const region of regions) {
+        for (const variant of variantsFor(region.canvas)) {
+          if (deadline()) break outer;
+          pass++;
+          say(pass === 1 ? 'מפענח ספרות לוחית...' : `מפענח (ניסיון ${pass})...`);
+          try {
+            await worker.setParameters({ tessedit_pageseg_mode: region.psm });
+            const res = await worker.recognize(variant.canvas);
+            const text = res && res.data ? res.data.text : '';
+            const conf = res && res.data ? res.data.confidence : 0;
+            for (const cand of this.extractCandidates(text, mode)) {
+              consider(cand, conf, region.tag + '/' + variant.tag);
+            }
+          } catch (e) {
+            // One bad pass must never kill the scan; note and continue.
+            console.warn('OCR pass failed:', region.tag, variant.tag, e);
+          }
+          // Early exit: valid-length candidate with strong confidence.
+          if (best && best.score >= 175) break outer;
+        }
+      }
+
+      return best; // null if nothing plate-like was read
+    }
+  };
+
   async function handleRealCameraOCR(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
     const scanOverlay = document.getElementById('ocrScanBar');
     const statusMsg = document.getElementById('ocrStatusMsg');
     scanOverlay.style.display = 'flex';
-    statusMsg.innerText = 'מזהה לוחית רישוי במצלמה...';
+    statusMsg.innerText = 'מזהה לוחית רישוי...';
     hideError();
 
     try {
-      if (typeof Tesseract === 'undefined') {
-        throw new Error('Tesseract OCR library loading...');
-      }
+      const best = await PlateOCR.recognize(file, currentMode, (m) => { statusMsg.innerText = m; });
 
-      const img = new Image();
-      const imgUrl = URL.createObjectURL(file);
-      
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = imgUrl;
-      });
-
-      const maxDim = 1400;
-      let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
-      }
-
-      const baseCanvas = document.createElement('canvas');
-      baseCanvas.width = w;
-      baseCanvas.height = h;
-      const baseCtx = baseCanvas.getContext('2d');
-      baseCtx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(imgUrl);
-
-      // STEP 1: Smart Yellow / Contrast Plate Localization
-      const imgData = baseCtx.getImageData(0, 0, w, h);
-      const data = imgData.data;
-      let yellowXs = [], yellowYs = [];
-
-      for (let y = 0; y < h; y += 2) {
-        for (let x = 0; x < w; x += 2) {
-          const idx = (y * w + x) * 4;
-          const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-          // Generous yellow condition for camera sensor & indoor white balance
-          if (r > 90 && g > 75 && r > b * 1.25 && g > b * 1.08) {
-            yellowXs.push(x);
-            yellowYs.push(y);
-          }
-        }
-      }
-
-      let cropCanvas = document.createElement('canvas');
-      let cropCtx = cropCanvas.getContext('2d');
-
-      if (yellowXs.length > 50 && currentMode !== 'tzama') {
-        // Yellow car plate detected
-        yellowXs.sort((a, b) => a - b);
-        yellowYs.sort((a, b) => a - b);
-        const p1 = Math.floor(yellowXs.length * 0.01);
-        const p99 = Math.floor(yellowXs.length * 0.99);
-        
-        let minX = Math.max(0, yellowXs[p1] - 30);
-        let maxX = Math.min(w, yellowXs[p99] + 30);
-        let minY = Math.max(0, yellowYs[p1] - 25);
-        let maxY = Math.min(h, yellowYs[p99] + 25);
-        
-        let cropW = maxX - minX, cropH = maxY - minY;
-        cropCanvas.width = cropW;
-        cropCanvas.height = cropH;
-        cropCtx.drawImage(baseCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-      } else {
-        // Direct or Tzama Plate (Take center/full image)
-        cropCanvas.width = w;
-        cropCanvas.height = h;
-        cropCtx.drawImage(baseCanvas, 0, 0, w, h);
-      }
-
-      // STEP 2: Multi-pass High Contrast Digit Enhancement
-      const cropData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
-      const cData = cropData.data;
-      
-      let totalLuma = 0;
-      for (let i = 0; i < cData.length; i += 16) {
-        totalLuma += 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
-      }
-      const avgLuma = totalLuma / (cData.length / 16);
-      const invert = (avgLuma < 90);
-
-      for (let i = 0; i < cData.length; i += 4) {
-        let gray = 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
-        if (invert) gray = 255 - gray;
-        const val = gray < 118 ? 0 : 255;
-        cData[i] = val;
-        cData[i+1] = val;
-        cData[i+2] = val;
-      }
-      cropCtx.putImageData(cropData, 0, 0);
-
-      statusMsg.innerText = 'מפענח ספרות לוחית...';
-
-      // STEP 3: Run Tesseract Recognition
-      const { data: { text } } = await Tesseract.recognize(cropCanvas, 'eng', {
-        tessedit_char_whitelist: '0123456789ILil-.: \n'
-      });
-
-      console.log('Raw OCR Text:', text);
-
-      // STEP 4: Robust Candidate Extraction
-      // Remove all non-digits
-      const allDigits = text.replace(/[^0-9]/g, '');
-      const candidates = text.match(/\b\d{5,8}\b/g) || [];
-      let detectedPlate = '';
-
-      if (currentMode === 'tzama') {
-        // 1. Try 2-tier stacked lines for machinery (e.g. 117\n642 -> 117642)
-        const lines = text.split('\n').map(l => l.replace(/[^0-9]/g, '')).filter(l => l.length >= 2);
-        if (lines.length >= 2 && (lines[0].length + lines[1].length >= 5 && lines[0].length + lines[1].length <= 6)) {
-          detectedPlate = lines[0] + lines[1];
-        } else if (allDigits.length >= 5 && allDigits.length <= 6) {
-          detectedPlate = allDigits;
-        } else if (candidates.length > 0) {
-          detectedPlate = candidates[0];
-        }
-      } else {
-        // Car Mode: Strictly prioritize 7 or 8 digit numbers
-        if (allDigits.length === 7 || allDigits.length === 8) {
-          detectedPlate = allDigits;
-        } else if (allDigits.length > 8) {
-          // If extra noise was captured, take 8 digits or longest candidate
-          const match8 = allDigits.match(/\d{8}/);
-          const match7 = allDigits.match(/\d{7}/);
-          if (match8) detectedPlate = match8[0];
-          else if (match7) detectedPlate = match7[0];
-        } else if (candidates.length > 0) {
-          candidates.sort((a, b) => b.length - a.length);
-          detectedPlate = candidates[0];
-        }
-      }
-
-      if (detectedPlate && detectedPlate.length >= 5) {
-        document.getElementById('plateInput').value = formatPlateString(detectedPlate);
-        onPlateInputChange(document.getElementById('plateInput'));
+      if (best && best.plate && best.plate.length >= 5) {
+        console.log('PlateOCR result:', best);
+        const plateInput = document.getElementById('plateInput');
+        plateInput.value = formatPlateString(best.plate);
+        onPlateInputChange(plateInput);
         runVehicleSearch();
       } else {
-        showError('לא זוהו ספרות לוחית בבירור. נסה לצלם מקרוב יותר או הקלד ידנית.');
+        showError('לא זוהתה לוחית בתמונה. צלם ישר מול הלוחית, קרוב ככל האפשר, ונסה שוב — או הקלד ידנית.');
       }
-
     } catch (err) {
-      console.error('OCR Error:', err);
-      showError('שגיאה בסריקת התמונה. אנא הקלד את המספר ידנית.');
+      console.error('OCR fatal error:', err);
+      await PlateOCR.resetWorker();
+      showError('שגיאה בסריקת התמונה. אנא נסה שוב או הקלד את המספר ידנית.');
     } finally {
       scanOverlay.style.display = 'none';
       input.value = '';
@@ -1679,6 +1952,12 @@
 
   // Initial Boot
   renderRecents();
+
+  // Warm the OCR engine the moment the user reaches for the camera, so the
+  // model is already downloaded by the time the photo comes back.
+  document.getElementById('cameraFileInput').addEventListener('click', function () {
+    PlateOCR.getWorker().catch(function () { /* retried on actual scan */ });
+  });
 </script>
 
 </body>
