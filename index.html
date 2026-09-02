@@ -912,7 +912,7 @@
           <span class="spec-val" id="resEngine">דיזל | 2967 סמ"ק | 286 כ"ס</span>
         </div>
         <div class="spec-item">
-          <span class="spec-label">משקל כולל / עצמי</span>
+          <span class="spec-label">משקל עצמי / כולל מורשה</span>
           <span class="spec-val" id="resWeight">2,900 ק"ג</span>
         </div>
         <div class="spec-item">
@@ -1262,7 +1262,17 @@
     const fuel = modelInfo.delek_nm || details.sug_delek_nm || (modelInfo.technologiat_hanaa_nm || 'בנזין/חשמל');
     document.getElementById('resEngine').innerText = [fuel, engineCc, engineHp].filter(Boolean).join(' | ') || 'חשמלי/בנזין';
 
-    document.getElementById('resWeight').innerText = (details.mishkal_kolel || modelInfo.mishkal_kolel) ? `${details.mishkal_kolel || modelInfo.mishkal_kolel} ק"ג` : '—';
+    const kolel = modelInfo.mishkal_kolel || details.mishkal_kolel || 0;
+    const atzmi = modelInfo.mishkal_atzmi || details.mishkal_atzmi || 0;
+    let weightStr = '—';
+    if (atzmi > 0 && kolel > 0) {
+      weightStr = `${Number(atzmi).toLocaleString()} ק"ג (עצמי) / ${Number(kolel).toLocaleString()} ק"ג (כולל)`;
+    } else if (kolel > 0) {
+      weightStr = `${Number(kolel).toLocaleString()} ק"ג (כולל מורשה)`;
+    } else if (atzmi > 0) {
+      weightStr = `${Number(atzmi).toLocaleString()} ק"ג (עצמי)`;
+    }
+    document.getElementById('resWeight').innerText = weightStr;
 
     const recallElem = document.getElementById('resRecall');
     if (recalls && recalls.length > 0) {
