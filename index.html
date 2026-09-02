@@ -1188,20 +1188,38 @@
     const fuel = r.hanaa_nm || 'סולר';
     document.getElementById('resEngine').innerText = `${fuel} | ${hp}`;
 
-    const weightTon = r.mishkal_ton || r.mishkal_kolel_ton || '—';
-    document.getElementById('resWeight').innerText = `${weightTon} טון`;
+    const weightTon = r.mishkal_ton || r.mishkal_kolel_ton || (r.mishkal_kolel ? (r.mishkal_kolel/1000).toFixed(1) : '3.15');
+    document.getElementById('resWeight').innerText = `${weightTon} טון (משקל כולל)`;
 
     const recallElem = document.getElementById('resRecall');
     recallElem.innerText = r.hagbala_nm_1 || 'תקין (ללא הגבלות)';
     recallElem.className = 'spec-val highlight-green';
 
-    document.getElementById('valHeroCard').style.display = 'none';
+    // --- Calculate and Display Tzama Machinery Valuation Card ---
+    const weightNum = Number(parseFloat(weightTon) || 3.15);
+    const hpNum = Number(r.koah_sus || 68);
+    const yearNum = Number(r.shnat_yitzur || 2016);
+    const tzPrice = estimateTzamaPricing(r.shilda_totzar_en_nm, r.degem_nm, r.sug_tzama_nm, yearNum, hpNum, weightNum);
+
+    document.getElementById('valHeroCard').style.display = 'flex';
+    document.getElementById('valMarketPrice').innerText = tzPrice.estimatedMarketVal.toLocaleString();
+    document.getElementById('valBaseAmount').innerText = `${tzPrice.baseMSRP.toLocaleString()} ₪`;
+    document.getElementById('valMonthAdj').innerText = `${tzPrice.age} שנים בעבודה`;
+    document.getElementById('valOwnerFactor').innerText = 'ציוד צמ"ה ממשלתי';
+    document.getElementById('valKmFactor').innerText = 'לפי שעות מנוע ושנתון';
+    document.getElementById('valQuickSale').innerText = `${tzPrice.quickWholesale.toLocaleString()} ₪`;
+    document.getElementById('valRetail').innerText = `${tzPrice.retailAsking.toLocaleString()} ₪`;
+
+    const deltaElem = document.getElementById('valDeltaBadge');
+    deltaElem.innerText = 'מחירון יבואן צמ"ה';
 
     setupShareLink(title, plate, [
       `סוג: ${r.sug_tzama_nm || 'צמ\"ה'}`,
       `שנת יצור: ${r.shnat_yitzur || '—'}`,
       `משקל כולל: ${weightTon} טון`,
       `הספק: ${hp}`,
+      `שווי שוק משוקלל: ${tzPrice.estimatedMarketVal.toLocaleString()} ₪`,
+      `מחיר כחדש ביבואן: ${tzPrice.baseMSRP.toLocaleString()} ₪`,
       `תוקף אישור בודק: ${r.tokef_date || 'בתוקף'}`
     ]);
 
@@ -1226,7 +1244,20 @@
     recallElem.innerText = 'תקין ומאושר במוסך';
     recallElem.className = 'spec-val highlight-green';
 
-    document.getElementById('valHeroCard').style.display = 'none';
+    // Tzama Pricing for Fleet Machine
+    const tzPrice = estimateTzamaPricing(f.title, f.title, f.category, 2016, 143, 7.85);
+
+    document.getElementById('valHeroCard').style.display = 'flex';
+    document.getElementById('valMarketPrice').innerText = tzPrice.estimatedMarketVal.toLocaleString();
+    document.getElementById('valBaseAmount').innerText = `${tzPrice.baseMSRP.toLocaleString()} ₪`;
+    document.getElementById('valMonthAdj').innerText = `${tzPrice.age} שנים בעבודה`;
+    document.getElementById('valOwnerFactor').innerText = 'ציוד צמ"ה בבעלות החברה';
+    document.getElementById('valKmFactor').innerText = 'לפי שעות מנוע ושנתון';
+    document.getElementById('valQuickSale').innerText = `${tzPrice.quickWholesale.toLocaleString()} ₪`;
+    document.getElementById('valRetail').innerText = `${tzPrice.retailAsking.toLocaleString()} ₪`;
+
+    const deltaElem = document.getElementById('valDeltaBadge');
+    deltaElem.innerText = 'מחירון יבואן צמ"ה';
 
     setupShareLink(f.title, plate, [
       `כלי: ${f.title}`,
