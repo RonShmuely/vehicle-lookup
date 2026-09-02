@@ -1172,6 +1172,9 @@
   }
 
   function renderTzamaResult(r, plate) {
+    // Auto-switch tab and plate frame to Tzama (Black/Brown)
+    setMode('tzama');
+
     const title = `${r.shilda_totzar_en_nm || 'יצרן צמ"ה'} ${r.degem_nm || ''}`;
     document.getElementById('resTitle').innerText = title;
     document.getElementById('resSub').innerText = `שנת ייצור: ${r.shnat_yitzur || '—'} | סוג: ${r.sug_tzama_nm || 'ציוד הנדסי'}`;
@@ -1206,6 +1209,9 @@
   }
 
   function renderInternalFleetResult(f, plate) {
+    // Auto-switch tab and plate frame to Tzama (Black/Brown)
+    setMode('tzama');
+
     document.getElementById('resTitle').innerText = f.title;
     document.getElementById('resSub').innerText = f.subtitle;
     document.getElementById('resCategoryTag').innerText = f.category;
@@ -1234,6 +1240,8 @@
 
   function renderVehicleResult(data) {
     const { plate, category, details, modelInfo, mileage, ownership, recalls } = data;
+    // Auto-switch tab and plate frame to Road Vehicle (Yellow)
+    setMode('car');
 
     const tozar = modelInfo.tozar || modelInfo.tozeret_nm || details.tozeret_nm || '';
     const kinuy = modelInfo.kinuy_mishari || modelInfo.degem_nm || details.degem_nm || '';
