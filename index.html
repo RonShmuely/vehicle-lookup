@@ -847,14 +847,14 @@
       is_tzama: true,
       title: "Wirtgen W50Ri (קטנה 14)",
       subtitle: "מקרצפת קרה • צי החברה",
-      category: "ציוד מכני הנדסי (צמ''ה)",
+      category: "ציוד מכני הנדסי (צמ\"ה)",
       testDate: "בתוקף (נבדק במוסך)",
       km: "שעות מנוע סדירות",
       ownership: "חברה (בבעלות מלאה)",
-      engine: "Deutz TCD 4.1 L4 | 143 כ''ס (סולר)",
+      engine: "Deutz TCD 4.1 L4 | 143 כ\"ס (סולר)",
       weight: "7.85 טון (מוביל: מוך/ארז)",
       recalls: [],
-      insight: "מקרצפת פעילה בצי. שסתום 2-Speed בבלוק HQ1 (מק''ט 3798259) שופץ ונבדק תקין ב-100%. שירות וחלפים: וירטגן ישראל / המוסך."
+      insight: "מקרצפת פעילה בצי. שסתום 2-Speed בבלוק HQ1 (מק\"ט 3798259) שופץ ונבדק תקין ב-100%. שירות וחלפים: וירטגן ישראל / המוסך."
     }
   };
 
@@ -936,7 +936,7 @@
     const plate = rawInput.replace(/\D/g, '');
     
     if (plate.length < 3) {
-      showError('אנא הזן מספר רישוי או צמ''ה תקין');
+      showError('אנא הזן מספר רישוי תקין');
       return;
     }
 
@@ -985,7 +985,7 @@
       }
 
       if (!found) {
-        showError(`מספר ${formatPlateString(plate)} לא נמצא במאגרי כלי הרכב או הצמ''ה של משרד התחבורה.`);
+        showError(`מספר ${formatPlateString(plate)} לא נמצא במאגרי כלי הרכב או הצמ\"ה של משרד התחבורה.`);
         return;
       }
 
@@ -1025,14 +1025,14 @@
   }
 
   function renderTzamaResult(r, plate) {
-    const title = `${r.shilda_totzar_en_nm || 'יצרן צמ''ה'} ${r.degem_nm || ''}`;
+    const title = `${r.shilda_totzar_en_nm || 'יצרן צמ\"ה'} ${r.degem_nm || ''}`;
     document.getElementById('resTitle').innerText = title;
     document.getElementById('resSub').innerText = `שנת ייצור: ${r.shnat_yitzur || '—'} | סוג: ${r.sug_tzama_nm || 'ציוד מכני הנדסי'}`;
-    document.getElementById('resCategoryTag').innerText = "כלי צמ''ה (לוחית חומה)";
+    document.getElementById('resCategoryTag').innerText = "כלי צמ\"ה (לוחית חומה)";
 
     document.getElementById('resTestDate').innerText = r.tokef_date || 'בתוקף';
     document.getElementById('resKm').innerText = 'לפי שעות מנוע בשטח';
-    document.getElementById('resOwnership').innerText = 'רישום צמ''ה ממשלתי';
+    document.getElementById('resOwnership').innerText = 'רישום צמ\"ה ממשלתי';
     
     const hp = r.koah_sus ? `${r.koah_sus} כ"ס` : '';
     const fuel = r.hanaa_nm || 'סולר';
