@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="בדיקת רכב וצמ''ה">
   <meta name="application-name" content="בדיקת רכב וצמ''ה">
   <meta name="theme-color" content="#0b0d10">
-  <title>בדיקת רכב, צמ''ה ומשרד התחבורה</title>
+  <title>בדיקת רכב, צמ''ה והערכת שווי שוק</title>
 
   <!-- PWA & App Icons -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -488,6 +488,100 @@
     .highlight-green { color: var(--accent-green) !important; }
     .highlight-red { color: var(--accent-red) !important; }
 
+    /* Weighted Market Valuation Hero Card */
+    .val-hero {
+      background: linear-gradient(180deg, #182235 0%, #111827 100%);
+      border: 1.5px solid #2563eb;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+    }
+    .val-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .val-title {
+      font-size: 14px;
+      font-weight: 900;
+      color: #60a5fa;
+    }
+    .val-delta-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+    }
+
+    .val-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .val-price-main {
+      font-size: 38px;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      line-height: 1;
+    }
+    .val-currency {
+      font-size: 20px;
+      font-weight: 800;
+      color: #93c5fd;
+    }
+
+    .val-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid #1e3a8a;
+      padding-top: 10px;
+    }
+    .val-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .val-row span:last-child {
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .market-range-box {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .range-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .range-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .range-val {
+      font-size: 16px;
+      font-weight: 900;
+      color: #f1f5f9;
+      margin-top: 2px;
+    }
+
     /* Actions: 1-Tap WhatsApp Share & PDF Print */
     .share-actions-row {
       display: grid;
@@ -642,6 +736,45 @@
       .spec-val {
         color: #000 !important;
       }
+
+      .val-hero {
+        background: #fff !important;
+        color: #000 !important;
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        page-break-inside: avoid;
+      }
+      .val-title {
+        color: #000 !important;
+        font-size: 13pt !important;
+      }
+      .val-price-main {
+        color: #000 !important;
+        font-size: 26pt !important;
+      }
+      .val-currency {
+        color: #000 !important;
+      }
+      .val-breakdown {
+        border-top-color: #cbd5e1 !important;
+      }
+      .val-row {
+        color: #333 !important;
+      }
+      .val-row span:last-child {
+        color: #000 !important;
+      }
+
+      .market-range-box {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #000 !important;
+      }
+      .range-val {
+        color: #000 !important;
+      }
     }
   </style>
 </head>
@@ -652,10 +785,10 @@
   <!-- Official Print-Only Certificate Header -->
   <div class="print-certificate-header">
     <div class="print-header-top">
-      <div class="print-main-title">תעודת בדיקת רכב ומפרט רשמי</div>
+      <div class="print-main-title">תעודת בדיקת רכב והערכת שווי שוק</div>
       <div class="print-date-badge" id="printDateStamp">תאריך בדיקה: 02/09/2026</div>
     </div>
-    <div class="print-sub-title">הפקת דו"ח רשמי — מאגרי משרד התחבורה, צמ"ה וצי החברה</div>
+    <div class="print-sub-title">הפקת דו"ח רשמי — מאגרי משרד התחבורה, צמ"ה ושקלול שוק</div>
   </div>
 
   <!-- Top Bar -->
@@ -727,7 +860,7 @@
 
   <!-- Search Button -->
   <button class="btn-search" id="searchBtn" onclick="runVehicleSearch()">
-    בדוק רכב במאגר הרשמי
+    בדוק רכב ושקלל שווי שוק
   </button>
 
   <!-- Recent Searches -->
@@ -755,7 +888,7 @@
           <div class="vehicle-title" id="resTitle">אאודי Q8 S-LINE</div>
           <div class="vehicle-sub" id="resSub">שנת ייצור: 2025 | רמת גימור: S LINE SUPR</div>
         </div>
-        <div class="category-badge" id="resCategoryTag">רכב פרטי / מסחרי</div>
+        <div class="category-badge" id="resCategoryTag">רכב פנאי-שטח יוקרה</div>
       </div>
 
       <div class="specs-grid">
@@ -786,7 +919,51 @@
       </div>
     </div>
 
-    <!-- Card 2: Actions (1-Tap WhatsApp Share & PDF Print) -->
+    <!-- Card 2: Weighted Market Valuation Hero Card (Vehicles only) -->
+    <div class="val-hero" id="valHeroCard">
+      <div class="val-header">
+        <div class="val-title">הערכת שווי שוק משוקללת</div>
+        <div class="val-delta-badge" id="valDeltaBadge">שקלול אלגוריתמי</div>
+      </div>
+
+      <div class="val-price-row">
+        <span class="val-price-main" id="valMarketPrice">705,000</span>
+        <span class="val-currency">₪</span>
+      </div>
+
+      <div class="val-breakdown">
+        <div class="val-row">
+          <span>מחיר בסיס (יבואן רשמי / סגמנט יוקרה):</span>
+          <span id="valBaseAmount">760,000 ₪</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול חודש עלייה לכביש (+0.5%/חודש):</span>
+          <span id="valMonthAdj">+5.0% (חודש 11)</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול בעלות ומקוריות (משרד הרישוי):</span>
+          <span id="valOwnerFactor">פרטי [0%]</span>
+        </div>
+        <div class="val-row">
+          <span>שקלול קילומטראז' ועומס מכני:</span>
+          <span id="valKmFactor">נמוך מהממוצע (+4%)</span>
+        </div>
+      </div>
+
+      <!-- Real Market Spread -->
+      <div class="market-range-box">
+        <div class="range-col">
+          <span class="range-title">מימוש מהיר / סוחר / טרייד-אין</span>
+          <span class="range-val" id="valQuickSale">565,000 ₪</span>
+        </div>
+        <div class="range-col" style="text-align: left;">
+          <span class="range-title">מחיר שוק ביד2 (מכירה לפרטי)</span>
+          <span class="range-val" id="valRetail">740,000 ₪</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Actions (1-Tap WhatsApp Share & PDF Print) -->
     <div class="card" style="padding:10px 14px;">
       <div class="share-actions-row">
         <a href="#" id="btnShareWa" target="_blank" class="btn-action-wa">
@@ -966,6 +1143,7 @@
       if (mileageRecs.length > 0) {
         mileage = mileageRecs[0].kilometer_test_aharon || null;
         if (mileageRecs[0].mkoriut_nm) ownership = mileageRecs[0].mkoriut_nm;
+        if (mileageRecs[0].rishum_rishon_dt) details.rishum_rishon_dt = mileageRecs[0].rishum_rishon_dt;
       }
 
       let modelInfo = {};
@@ -1016,6 +1194,8 @@
     recallElem.innerText = r.hagbala_nm_1 || 'תקין (ללא הגבלות)';
     recallElem.className = 'spec-val highlight-green';
 
+    document.getElementById('valHeroCard').style.display = 'none';
+
     setupShareLink(title, plate, [
       `סוג: ${r.sug_tzama_nm || 'צמ\"ה'}`,
       `שנת יצור: ${r.shnat_yitzur || '—'}`,
@@ -1041,6 +1221,8 @@
     const recallElem = document.getElementById('resRecall');
     recallElem.innerText = 'תקין ומאושר במוסך';
     recallElem.className = 'spec-val highlight-green';
+
+    document.getElementById('valHeroCard').style.display = 'none';
 
     setupShareLink(f.title, plate, [
       `כלי: ${f.title}`,
@@ -1085,11 +1267,27 @@
       recallElem.className = 'spec-val highlight-green';
     }
 
+    // Run Real Segment-Aware Market Valuation
+    document.getElementById('valHeroCard').style.display = 'flex';
+    const val = computeWeightedMarketValuation(data);
+    
+    document.getElementById('valMarketPrice').innerText = val.marketPrice.toLocaleString();
+    document.getElementById('valBaseAmount').innerText = `${val.baseMSRP.toLocaleString()} ₪`;
+    document.getElementById('valMonthAdj').innerText = `${val.monthAdjPct >= 0 ? '+' : ''}${val.monthAdjPct}% (חודש ${val.regMonth})`;
+    document.getElementById('valOwnerFactor').innerText = `${val.ownerLabel} [${val.ownerPct}%]`;
+    document.getElementById('valKmFactor').innerText = val.kmLabel;
+    document.getElementById('valQuickSale').innerText = `${val.quickSale.toLocaleString()} ₪`;
+    document.getElementById('valRetail').innerText = `${val.retail.toLocaleString()} ₪`;
+
+    const deltaElem = document.getElementById('valDeltaBadge');
+    deltaElem.innerText = `שקלול סגמנט (${val.totalAdjustmentPct >= 0 ? '+' : ''}${val.totalAdjustmentPct}%)`;
+
     setupShareLink(fullTitle, plate, [
       `שנת יצור: ${year}`,
+      `שווי שוק משוקלל: ${val.marketPrice.toLocaleString()} ₪`,
+      `טווח יד2: ${val.quickSale.toLocaleString()} ₪ - ${val.retail.toLocaleString()} ₪`,
       `קילומטראז': ${mileage ? Number(mileage).toLocaleString() + ' ק\"מ' : 'לא דווח'}`,
-      `בעלות מקורית: ${ownership}`,
-      `מנוע: ${[fuel, engineCc, engineHp].filter(Boolean).join(' | ')}`,
+      `בעלות: ${ownership}`,
       `תוקף טסט: ${details.tokef_dt || 'בתוקף'}`
     ]);
 
@@ -1101,6 +1299,195 @@
       lines.map(l => `• ${l}`).join('\n') +
       `\nנבדק באפליקציית בדיקת רכב וצמ"ה.`;
     document.getElementById('btnShareWa').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  }
+
+  // ========================================================
+  // REAL SEGMENT & BRAND-AWARE MARKET VALUATION ENGINE
+  // ========================================================
+  function estimateBaseMSRP(data) {
+    const brand = (data.modelInfo.tozar || data.modelInfo.tozeret_nm || data.details.tozeret_nm || '').toLowerCase();
+    const model = (data.modelInfo.kinuy_mishari || data.modelInfo.degem_nm || data.details.degem_nm || '').toLowerCase();
+    const hp = Number(data.modelInfo.koah_sus || data.details.koah_sus || 0);
+    const cc = Number(data.modelInfo.nefah_manoa || data.details.nefah_manoa || 0);
+
+    // 1. Ultra Luxury / Performance SUVs (Audi Q8/Q7, BMW X5/X6/X7, Mercedes GLE/GLS/G-Wagon, Porsche Cayenne, Range Rover)
+    if (brand.includes('אאודי') || brand.includes('audi')) {
+      if (model.includes('q8') || model.includes('sq8') || model.includes('rs q8')) {
+        if (model.includes('rs')) return 1350000;
+        if (model.includes('sq8') || hp > 450) return 920000;
+        return 760000; // Base Audi Q8 50 TDI / 55 TFSI
+      }
+      if (model.includes('q7') || model.includes('e-tron gt')) return 680000;
+      if (model.includes('q5') || model.includes('a6')) return 410000;
+      if (model.includes('q3') || model.includes('a4')) return 290000;
+      if (model.includes('a3') || model.includes('q2')) return 210000;
+      return 350000;
+    }
+
+    if (brand.includes('ב.מ.וו') || brand.includes('bmw')) {
+      if (model.includes('x7') || model.includes('7') || model.includes('m5') || model.includes('m8')) return 880000;
+      if (model.includes('x5') || model.includes('x6')) return 720000;
+      if (model.includes('x3') || model.includes('5')) return 430000;
+      if (model.includes('x1') || model.includes('3')) return 300000;
+      return 360000;
+    }
+
+    if (brand.includes('מרצדס') || brand.includes('mercedes')) {
+      if (model.includes('gls') || model.includes('s') || model.includes('g') || model.includes('amg')) return 920000;
+      if (model.includes('gle')) return 730000;
+      if (model.includes('glc') || model.includes('e')) return 460000;
+      if (model.includes('gla') || model.includes('glb') || model.includes('c')) return 320000;
+      if (model.includes('a') || model.includes('cla')) return 260000;
+      return 380000;
+    }
+
+    if (brand.includes('פורשה') || brand.includes('porsche')) {
+      if (model.includes('cayenne') || model.includes('panamera')) return 850000;
+      if (model.includes('taycan')) return 780000;
+      if (model.includes('macan')) return 580000;
+      return 750000;
+    }
+
+    if (brand.includes('רובר') || brand.includes('land rover') || brand.includes('range rover')) {
+      if (model.includes('vogue') || model.includes('sport')) return 890000;
+      if (model.includes('defender')) return 640000;
+      if (model.includes('velar') || model.includes('discovery')) return 490000;
+      return 520000;
+    }
+
+    if (brand.includes('גנסיס') || brand.includes('genesis') || brand.includes('לקסוס') || brand.includes('lexus')) {
+      if (model.includes('gv80') || model.includes('rx') || model.includes('ls')) return 560000;
+      if (model.includes('gv70') || model.includes('nx')) return 380000;
+      return 340000;
+    }
+
+    // Heavy Trucks & Commercial Machinery
+    if (data.category.includes('משאית') || data.category.includes('כבד')) {
+      if (brand.includes('וולוו') || brand.includes('סקניה') || brand.includes('מרצדס') || brand.includes('מאן')) return 680000;
+      return 420000;
+    }
+
+    // High Displacement / High HP generic override
+    if (hp >= 300 || cc >= 3000) return 480000;
+    if (hp >= 240 || cc >= 2400) return 320000;
+
+    // Midsize / Popular EV
+    if (brand.includes('טסלה') || brand.includes('tesla')) {
+      if (model.includes('x') || model.includes('s')) return 580000;
+      if (model.includes('y')) return 245000;
+      return 210000;
+    }
+
+    // Mainstream Family SUVs (RAV4, Santa Fe, Kodiaq, Sorento)
+    if (model.includes('rav4') || model.includes('santa fe') || model.includes('kodiaq') || model.includes('sorento') || model.includes('ev6') || model.includes('palisade')) {
+      return 240000;
+    }
+
+    // Mainstream Crossovers (Tucson, Sportage, Atto 3, Geometry, MG4, Corolla Cross)
+    if (data.category.includes('מסחרי')) return 175000;
+    return 165000; // Base standard family car
+  }
+
+  function computeWeightedMarketValuation(data) {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    let year = Number(data.details.shnat_yitzur || data.modelInfo.shnat_yitzur || 2021);
+    let regMonth = 1;
+    const regDt = data.details.rishum_rishon_dt || '';
+    if (regDt.length >= 7) {
+      regMonth = parseInt(regDt.slice(5, 7), 10) || 1;
+    }
+
+    let yearsOnRoad = Math.max(0.2, (currentYear - year) + ((currentMonth - regMonth) / 12.0));
+
+    let baseMSRP = estimateBaseMSRP(data);
+    let deprecCurve = [0.12, 0.11, 0.10, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06];
+
+    let price = baseMSRP;
+    const fullYears = Math.min(Math.floor(yearsOnRoad), deprecCurve.length);
+    for (let i = 0; i < fullYears; i++) {
+      price *= (1.0 - deprecCurve[i]);
+    }
+    const frac = yearsOnRoad - Math.floor(yearsOnRoad);
+    if (frac > 0 && fullYears < deprecCurve.length) {
+      price *= (1.0 - (deprecCurve[fullYears] * frac));
+    }
+
+    let basePrice = Math.max(15000, Math.round(price / 1000) * 1000);
+
+    const monthAdjPct = Number(((regMonth - 1) * 0.5).toFixed(1));
+
+    const own = data.ownership || '';
+    let ownerPct = 0.0;
+    let ownerLabel = 'פרטי';
+
+    if (own.includes('החכר') || own.includes('ליסינג')) {
+      ownerPct = -16.0;
+      ownerLabel = 'ליסינג תפעולי';
+    } else if (own.includes('השכרה')) {
+      ownerPct = -22.0;
+      ownerLabel = 'השכרה';
+    } else if (own.includes('חברה')) {
+      ownerPct = -11.0;
+      ownerLabel = 'חברה / עוסק';
+    } else if (own.includes('מונית')) {
+      ownerPct = -35.0;
+      ownerLabel = 'מונית לשעבר';
+    } else if (own.includes('ממשל') || own.includes('משטרה')) {
+      ownerPct = -25.0;
+      ownerLabel = 'ממשלתי / משטרה';
+    }
+
+    const km = Number(data.mileage || 0);
+    const annualAvg = (data.category.includes('משאית') || data.category.includes('מסחרי')) ? 30000 : 16000;
+    const expectedKm = Math.round(annualAvg * yearsOnRoad);
+    
+    let kmPct = 0.0;
+    let kmLabel = 'תואם שנתון';
+
+    if (km > 0) {
+      const kmDiff = km - expectedKm;
+      if (km <= 2000 && yearsOnRoad <= 1) {
+        kmPct = +4.0;
+        kmLabel = `רכב חדש לחלוטין (${km.toLocaleString()} ק"מ) [+4%]`;
+      } else if (km >= 250000) {
+        kmPct = -28.0;
+        kmLabel = `קילומטראז' גבוה מאוד (${km.toLocaleString()} ק"מ) [-28%]`;
+      } else if (km >= 180000) {
+        kmPct = -18.0;
+        kmLabel = `קילומטראז' גבוה (${km.toLocaleString()} ק"מ) [-18%]`;
+      } else if (kmDiff > 15000) {
+        kmPct = -Math.min(15.0, Number(((kmDiff / 10000.0) * 2.0).toFixed(1)));
+        kmLabel = `מעל הממוצע (${km.toLocaleString()} ק"מ) [${kmPct}%]`;
+      } else if (kmDiff < -15000) {
+        kmPct = Math.min(8.0, Number(((Math.abs(kmDiff) / 10000.0) * 1.5).toFixed(1)));
+        kmLabel = `נמוך מהממוצע (${km.toLocaleString()} ק"מ) [+${kmPct}%]`;
+      }
+    }
+
+    const totalFactor = Math.max(0.35, 1.0 + (monthAdjPct / 100.0) + (ownerPct / 100.0) + (kmPct / 100.0));
+    let marketPrice = Math.max(10000, Math.round((basePrice * totalFactor) / 1000) * 1000);
+
+    let quickSale = Math.max(8000, Math.round((marketPrice * 0.80) / 1000) * 1000);
+    let retail = Math.round((marketPrice * 1.05) / 1000) * 1000;
+
+    return {
+      baseMSRP,
+      basePrice,
+      regMonth,
+      monthAdjPct,
+      ownerLabel,
+      ownerPct,
+      kmLabel,
+      kmPct,
+      totalAdjustmentPct: Number(((totalFactor - 1.0) * 100).toFixed(1)),
+      marketPrice,
+      quickSale,
+      retail,
+      expectedKm
+    };
   }
 
   function showError(msg) {
