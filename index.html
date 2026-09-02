@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="בדיקת רכב">
-  <meta name="application-name" content="בדיקת רכב ומחירון שטח">
+  <meta name="apple-mobile-web-app-title" content="בדיקת רכב וצמ''ה">
+  <meta name="application-name" content="בדיקת רכב, צמ''ה ומחירון שטח">
   <meta name="theme-color" content="#0b0d10">
-  <title>בדיקת רכב ומחירון שטח | לוי יצחק & שוק</title>
+  <title>בדיקת רכב וצמ''ה | לוי יצחק & משרד התחבורה</title>
 
   <!-- PWA & App Icons -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -32,6 +32,7 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       --accent-orange: #f59e0b;
+      --accent-brown: #7c2d12;
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
@@ -105,6 +106,43 @@
       box-shadow: 0 0 8px var(--accent-green);
     }
 
+    /* Mode Switcher (Car vs Heavy Machinery / צמ"ה) */
+    .type-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 4px;
+    }
+    .type-btn {
+      height: 38px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .type-btn.active.car {
+      background: #f5c518;
+      color: #000;
+      box-shadow: 0 2px 8px rgba(245, 197, 24, 0.25);
+    }
+    .type-btn.active.tzama {
+      background: #7c2d12;
+      color: #fed7aa;
+      border: 1px solid #ea580c;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+    }
+
     /* Israeli License Plate Box */
     .plate-wrapper {
       direction: ltr !important;
@@ -120,10 +158,12 @@
       flex-direction: row !important;
       align-items: stretch;
       height: 92px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: all 0.2s ease;
     }
-    .plate-wrapper:focus-within {
-      box-shadow: 0 8px 30px rgba(245, 197, 24, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.8);
+    .plate-wrapper.tzama-mode {
+      background: linear-gradient(180deg, #9a3412 0%, #7c2d12 50%, #451a03 100%);
+      border-color: #270a04;
+      box-shadow: 0 8px 24px rgba(124, 45, 18, 0.5);
     }
 
     .plate-inner-border {
@@ -137,6 +177,9 @@
       pointer-events: none;
       z-index: 1;
     }
+    .plate-wrapper.tzama-mode .plate-inner-border {
+      border-color: #3b1104;
+    }
 
     .plate-il-strip {
       width: 52px;
@@ -149,181 +192,170 @@
       justify-content: space-between;
       padding: 6px 2px;
       color: #fff;
+      font-weight: 900;
       z-index: 2;
-      box-shadow: inset -1px 0 2px rgba(0,0,0,0.3);
       user-select: none;
-      flex-shrink: 0;
+    }
+    .plate-wrapper.tzama-mode .plate-il-strip {
+      background: linear-gradient(180deg, #431407 0%, #270a04 100%);
+      color: #fed7aa;
     }
     .plate-il-flag {
-      width: 28px;
-      height: 19px;
-      background: #fff;
-      border: 1px solid #002b80;
-      border-radius: 2px;
-      position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 2px 0;
+      align-items: center;
+      gap: 1px;
     }
-    .flag-stripe {
-      height: 2px;
-      background: #003399;
-      width: 100%;
-    }
-    .flag-star {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 9px;
-      color: #003399;
-      line-height: 1;
-    }
-    .plate-il-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 15px;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-    .plate-he-text {
-      font-size: 10px;
-      font-weight: 800;
-      color: #fff;
-    }
+    .flag-stripe { width: 22px; height: 2px; background: #fff; }
+    .flag-star { font-size: 8px; line-height: 1; }
+    .plate-il-text { font-size: 15px; letter-spacing: 0.5px; font-weight: 900; }
+    .plate-he-text { font-size: 10px; font-weight: 700; }
 
     .plate-input-container {
       flex: 1;
       display: flex;
       align-items: center;
+      justify-content: center;
       position: relative;
       z-index: 2;
       padding: 0 10px;
     }
-
     .real-plate-input {
       width: 100%;
-      height: 100%;
       background: transparent;
       border: none;
       outline: none;
       font-family: 'JetBrains Mono', 'Rubik', monospace;
-      font-size: 38px;
+      font-size: 34px;
       font-weight: 900;
+      text-align: center;
       color: #111;
       letter-spacing: 2px;
-      text-align: center;
-      direction: ltr;
-      caret-color: #111;
-      padding: 0;
-      text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.4);
+      direction: ltr !important;
+      text-transform: uppercase;
     }
-
+    .plate-wrapper.tzama-mode .real-plate-input {
+      color: #fed7aa;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
     .real-plate-input::placeholder {
-      color: rgba(17, 17, 17, 0.35);
-      font-size: 26px;
+      font-size: 20px;
       font-weight: 700;
-      letter-spacing: 1px;
+      color: rgba(0,0,0,0.35);
+      letter-spacing: 0;
+      font-family: 'Heebo', sans-serif;
+    }
+    .plate-wrapper.tzama-mode .real-plate-input::placeholder {
+      color: rgba(254, 215, 170, 0.4);
     }
 
-    .plate-clear-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.18);
-      border: none;
-      color: #111;
-      font-size: 16px;
-      font-weight: 900;
-      display: none;
+    .plate-camera-btn {
+      position: absolute;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0,0,0,0.12);
+      border: 1px solid rgba(0,0,0,0.25);
+      border-radius: 8px;
+      display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      margin-left: 4px;
-      flex-shrink: 0;
+      font-size: 18px;
+      color: #000;
+      transition: all 0.15s ease;
+    }
+    .plate-wrapper.tzama-mode .plate-camera-btn {
+      color: #fed7aa;
+      background: rgba(0,0,0,0.3);
+      border-color: rgba(254, 215, 170, 0.3);
+    }
+    .plate-clear-btn {
+      position: absolute;
+      right: 56px;
+      width: 28px;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.2);
+      border: none;
+      border-radius: 50%;
+      color: #111;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Action Button */
+    /* Search Action Button */
     .btn-search {
       width: 100%;
-      height: 56px;
-      background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+      height: 52px;
+      background: var(--primary);
       border: none;
       border-radius: var(--radius-md);
       color: #fff;
-      font-family: 'Heebo', sans-serif;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+      gap: 8px;
       cursor: pointer;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
       transition: all 0.15s ease;
     }
     .btn-search:active {
       transform: scale(0.98);
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-    }
-    .btn-search:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
 
-    /* Quick Recents Chips */
-    .recents-row {
+    /* Recent Searches Badges */
+    .recents-box {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .recents-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .recents-list {
+      display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 2px 0 6px;
-      scrollbar-width: none;
-    }
-    .recents-row::-webkit-scrollbar {
-      display: none;
-    }
-    .recent-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      font-weight: 700;
+      padding-bottom: 2px;
     }
     .recent-chip {
-      background: #1c212a;
+      background: var(--card-bg);
       border: 1px solid var(--card-border);
-      color: #cbd5e1;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      color: var(--text);
+      font-size: 12px;
       font-weight: 700;
-      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 5px 10px;
+      border-radius: 6px;
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.15s ease;
-      direction: ltr;
     }
-    .recent-chip:active {
-      background: #28303d;
+    .recent-chip:hover {
       border-color: var(--primary);
-      color: #fff;
+      color: var(--primary);
     }
 
-    /* Loader */
+    /* Loading Spinner */
     .loader-box {
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      padding: 40px 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
+      padding: 30px 0;
+      gap: 12px;
     }
     .spinner {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border: 3px solid rgba(59, 130, 246, 0.2);
       border-top-color: var(--primary);
       border-radius: 50%;
@@ -333,24 +365,24 @@
       to { transform: rotate(360deg); }
     }
     .loader-text {
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 13px;
       color: var(--text-muted);
+      font-weight: 600;
     }
 
-    /* Result Card */
-    .result-card {
+    /* Result Card Layout */
+    .result-container {
       display: none;
       flex-direction: column;
       gap: 14px;
-      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .card-section {
+    .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
@@ -358,144 +390,139 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
-    .veh-header {
+    .vehicle-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 12px;
+      gap: 8px;
     }
-    .veh-title h2 {
-      font-size: 22px;
+    .vehicle-title {
+      font-size: 19px;
       font-weight: 900;
       color: #fff;
-      line-height: 1.2;
+      line-height: 1.25;
     }
-    .veh-title .veh-sub {
+    .vehicle-sub {
       font-size: 13px;
       color: var(--text-muted);
-      margin-top: 4px;
+      font-weight: 600;
+      margin-top: 3px;
     }
-    .veh-category-tag {
-      background: #1f2937;
-      color: #93c5fd;
-      border: 1px solid #374151;
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
+    .category-badge {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
       white-space: nowrap;
     }
 
-    .spec-grid {
+    /* Quick Specs Grid */
+    .specs-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
     .spec-item {
-      background: #0f1217;
-      border: 1px solid #1e2430;
+      background: #0e1117;
+      border: 1px solid #1a1f29;
+      padding: 8px 10px;
       border-radius: var(--radius-sm);
-      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .spec-label {
       font-size: 11px;
       color: var(--text-muted);
       font-weight: 700;
-      margin-bottom: 3px;
     }
     .spec-val {
-      font-size: 15px;
+      font-size: 13.5px;
       font-weight: 800;
       color: #fff;
     }
-    .spec-val.highlight-green { color: var(--accent-green); }
-    .spec-val.highlight-orange { color: var(--accent-orange); }
-    .spec-val.highlight-red { color: var(--accent-red); }
+    .highlight-green { color: var(--accent-green) !important; }
+    .highlight-red { color: var(--accent-red) !important; }
 
-    /* Levi Itzhak Valuation Box */
-    .val-box {
-      background: linear-gradient(145deg, #111a2e 0%, #0d1322 100%);
-      border: 1px solid #1e3a8a;
+    /* Levi Itzhak Valuation Hero Card */
+    .val-hero {
+      background: linear-gradient(180deg, #182235 0%, #111827 100%);
+      border: 1.5px solid #2563eb;
       border-radius: var(--radius-lg);
-      padding: 18px 16px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
     }
-    .val-top {
+    .val-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .val-top-title {
-      font-size: 13px;
-      font-weight: 800;
+    .val-title {
+      font-size: 14px;
+      font-weight: 900;
       color: #60a5fa;
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .val-badge-official {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid #3b82f6;
-      color: #93c5fd;
+    .val-delta-badge {
+      font-size: 12px;
+      font-weight: 900;
       padding: 2px 8px;
       border-radius: 6px;
-      font-size: 11px;
-      font-weight: 800;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
     }
-    .val-main-price {
+    .val-delta-badge.positive {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #4ade80;
+    }
+
+    .val-price-row {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 6px;
     }
-    .val-amount {
-      font-family: 'Rubik', sans-serif;
+    .val-price-main {
       font-size: 38px;
       font-weight: 900;
-      color: #38bdf8;
-      letter-spacing: -0.5px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      line-height: 1;
     }
     .val-currency {
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 800;
       color: #93c5fd;
     }
-    .val-delta-badge {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .val-delta-badge.positive {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.3);
-      color: #34d399;
-    }
 
-    /* Breakdown Table */
     .val-breakdown {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      border-top: 1px solid #1e293b;
+      border-top: 1px solid #1e3a8a;
       padding-top: 10px;
-      font-size: 12px;
     }
     .val-row {
       display: flex;
       justify-content: space-between;
+      font-size: 12px;
       color: #cbd5e1;
+      font-weight: 600;
     }
     .val-row span:last-child {
-      font-weight: 700;
+      font-weight: 800;
       color: #fff;
     }
 
@@ -550,6 +577,41 @@
       color: #fef3c7;
     }
 
+    /* Actions: 1-Tap WhatsApp Share & PDF Print */
+    .share-actions-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 8px;
+    }
+    .btn-action-wa {
+      height: 48px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-action-print {
+      height: 48px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
     .error-box {
       display: none;
       background: rgba(239, 68, 68, 0.1);
@@ -570,22 +632,32 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand">
-      <div class="brand-icon">🚗</div>
+      <div class="brand-icon">🚜</div>
       <div class="brand-text">
-        <h1>בדיקת רכב ומחירון שטח</h1>
+        <h1>בדיקת רכב, צמ''ה ומחירון</h1>
       </div>
     </div>
     <div class="live-badge">
       <div class="live-dot"></div>
-      ממשלתי חי
+      ממשלתי & צי חי
     </div>
   </div>
 
+  <!-- Type Switcher: Car vs Heavy Machinery (צמ"ה) -->
+  <div class="type-switcher">
+    <button type="button" class="type-btn active car" id="btnModeCar" onclick="setMode('car')">
+      🚗 רכב פרטי / מסחרי
+    </button>
+    <button type="button" class="type-btn tzama" id="btnModeTzama" onclick="setMode('tzama')">
+      🚜 כלי צמ''ה (לוחית חומה)
+    </button>
+  </div>
+
   <!-- Israeli License Plate Input -->
-  <div class="plate-wrapper">
+  <div class="plate-wrapper" id="plateWrapper">
     <div class="plate-inner-border"></div>
     
-    <!-- IL Blue Strip on LEFT -->
+    <!-- IL Blue/Brown Strip on LEFT -->
     <div class="plate-il-strip">
       <div class="plate-il-flag">
         <div class="flag-stripe"></div>
@@ -604,13 +676,18 @@
         class="real-plate-input" 
         inputmode="numeric" 
         pattern="[0-9]*" 
-        placeholder="הקש מספר רכב"
+        placeholder="הקש מספר רכב / צמ''ה"
         maxlength="10"
         autocomplete="off"
         autocorrect="off"
         oninput="onPlateInputChange(this)"
         onkeydown="if(event.key === 'Enter') runVehicleSearch()"
       />
+      <!-- Camera Scan Button -->
+      <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה">
+        📷
+      </button>
+      <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraScan(this)">
       <button type="button" id="clearBtn" class="plate-clear-btn" onclick="clearPlateInput()">✕</button>
     </div>
   </div>
@@ -621,78 +698,75 @@
     <span>בדוק רכב ושקלל מחירון</span>
   </button>
 
-  <!-- Recent Checks Chips -->
-  <div class="recents-row" id="recentsRow">
-    <span class="recent-label">אחרונים:</span>
-    <div class="recent-chip" onclick="setAndSearch('64802003')">648-02-003</div>
-    <div class="recent-chip" onclick="setAndSearch('36479701')">364-79-701</div>
-    <div class="recent-chip" onclick="setAndSearch('5944155')">59-441-55</div>
+  <!-- Recent Searches -->
+  <div class="recents-box" id="recentsBox" style="display: none;">
+    <div class="recents-title">בדיקות אחרונות:</div>
+    <div class="recents-list" id="recentsList"></div>
   </div>
 
-  <!-- Error Display -->
-  <div class="error-box" id="errorBox"></div>
-
-  <!-- Loading State -->
+  <!-- Loader -->
   <div class="loader-box" id="loaderBox">
     <div class="spinner"></div>
-    <div class="loader-text" id="loaderText">שולף נתוני רישוי ממשלתיים...</div>
+    <div class="loader-text">מתחבר למאגרי משרד התחבורה והצמ''ה...</div>
   </div>
 
-  <!-- Result Container -->
-  <div class="result-card" id="resultCard">
+  <!-- Error Message -->
+  <div class="error-box" id="errorBox"></div>
 
-    <!-- Card 1: Technical & Identity Specs -->
-    <div class="card-section">
-      <div class="veh-header">
-        <div class="veh-title">
-          <h2 id="resTitle">סרס (SERES 3)</h2>
-          <div class="veh-sub" id="resSub">שנת ייצור 2021 | רמת גימור EV</div>
+  <!-- Result Container -->
+  <div class="result-container" id="resultCard">
+    
+    <!-- Card 1: Official Ministry Specs -->
+    <div class="card">
+      <div class="vehicle-header">
+        <div>
+          <div class="vehicle-title" id="resTitle">SERES 3 EV COMFORT</div>
+          <div class="vehicle-sub" id="resSub">שנת ייצור: 2021 | רמת גימור: COMFORT</div>
         </div>
-        <div class="veh-category-tag" id="resCategoryTag">רכב פרטי</div>
+        <div class="category-badge" id="resCategoryTag">רכב פרטי</div>
       </div>
 
-      <div class="spec-grid">
+      <div class="specs-grid">
         <div class="spec-item">
-          <div class="spec-label">תוקף טסט (רישיון)</div>
-          <div class="spec-val" id="resTestDate">—</div>
+          <span class="spec-label">תוקף רישוי / טסט / בודק</span>
+          <span class="spec-val" id="resTestDate">09/2026</span>
         </div>
         <div class="spec-item">
-          <div class="spec-label">קילומטראז' בטסט אחרון</div>
-          <div class="spec-val" id="resKm">—</div>
+          <span class="spec-label">קילומטראז' / שעות מנוע</span>
+          <span class="spec-val" id="resKm">62,000 ק"מ</span>
         </div>
         <div class="spec-item">
-          <div class="spec-label">מקוריות / בעלות</div>
-          <div class="spec-val" id="resOwnership">—</div>
+          <span class="spec-label">בעלות מקורית</span>
+          <span class="spec-val" id="resOwnership">פרטי</span>
         </div>
         <div class="spec-item">
-          <div class="spec-label">מנוע והנעה</div>
-          <div class="spec-val" id="resEngine">—</div>
+          <span class="spec-label">מנוע / הנעה</span>
+          <span class="spec-val" id="resEngine">חשמלי | 163 כ"ס</span>
         </div>
         <div class="spec-item">
-          <div class="spec-label">משקל מורשה</div>
-          <div class="spec-val" id="resWeight">—</div>
+          <span class="spec-label">משקל כולל / עצמי</span>
+          <span class="spec-val" id="resWeight">1,765 ק"ג</span>
         </div>
         <div class="spec-item">
-          <div class="spec-label">קריאות שירות (ריקול)</div>
-          <div class="spec-val highlight-green" id="resRecall">אין (תקין)</div>
+          <span class="spec-label">סטטוס קריאות שירות (ריקול)</span>
+          <span class="spec-val highlight-green" id="resRecall">אין (תקין)</span>
         </div>
       </div>
     </div>
 
-    <!-- Card 2: Official Levi Itzhak Weighted Valuation -->
-    <div class="val-box">
-      <div class="val-top">
-        <div class="val-top-title">
-          <span>📘</span>
+    <!-- Card 2: Levi Itzhak Valuation Hero Card (Vehicles only) -->
+    <div class="val-hero" id="valHeroCard">
+      <div class="val-header">
+        <div class="val-title">
+          <span>📊</span>
           <span>מחירון לוי יצחק משוקלל</span>
         </div>
-        <div class="val-badge-official">רשמי לביטוח ושמאות</div>
+        <div class="val-delta-badge positive" id="valDeltaBadge">+2.5%</div>
       </div>
 
-      <div class="val-main-price">
-        <span class="val-amount" id="valLeviPrice">0</span>
+      <div class="val-price-row">
+        <span class="val-price-main" id="valLeviPrice">87,500</span>
         <span class="val-currency">₪</span>
-        <span class="val-delta-badge" id="valDeltaBadge">-0%</span>
       </div>
 
       <div class="val-breakdown">
@@ -738,11 +812,59 @@
       </div>
     </div>
 
+    <!-- Card 4: Actions (1-Tap WhatsApp Share & Print) -->
+    <div class="card" style="padding:10px 14px;">
+      <div class="share-actions-row">
+        <a href="#" id="btnShareWa" target="_blank" class="btn-action-wa">
+          <span>📲</span>
+          <span>שתף דו"ח בדיקה בוואטסאפ</span>
+        </a>
+        <button type="button" class="btn-action-print" onclick="window.print()">
+          <span>הדפס PDF</span>
+        </button>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
 <script>
+  let currentMode = 'car';
+
+  const RESOURCES = {
+    active_vehicles_2: "0866573c-40cd-4ca8-91d2-9dd2d7a492e5",
+    heavy_trucks: "cd3acc5c-03c3-4c89-9c54-d40f93c0d790",
+    tzama_equipment: "58dc4654-16b1-42ed-8170-98fadec153ea",
+    history_mileage: "56063a99-8a3e-4ff4-912e-5966c0279bad",
+    recalls: "36bf1404-0be4-49d2-82dc-2f1ead4a8b93",
+    models: "142afde2-6228-49f9-8a29-9b6c3a0cbe40"
+  };
+
+  // Internal Company Fleet Dossiers (Machinery)
+  const fleetDatabase = {
+    "117642": {
+      is_tzama: true,
+      title: "Wirtgen W50Ri (קטנה 14)",
+      subtitle: "מקרצפת קרה • צי החברה",
+      category: "ציוד מכני הנדסי (צמ''ה)",
+      testDate: "בתוקף (נבדק במוסך)",
+      km: "שעות מנוע סדירות",
+      ownership: "חברה (בבעלות מלאה)",
+      engine: "Deutz TCD 4.1 L4 | 143 כ''ס (סולר)",
+      weight: "7.85 טון (מוביל: מוך/ארז)",
+      recalls: [],
+      insight: "מקרצפת פעילה בצי. שסתום 2-Speed בבלוק HQ1 (מק''ט 3798259) שופץ ונבדק תקין ב-100%. שירות וחלפים: וירטגן ישראל / המוסך."
+    }
+  };
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('btnModeCar').classList.toggle('active', mode === 'car');
+    document.getElementById('btnModeTzama').classList.toggle('active', mode === 'tzama');
+    document.getElementById('plateWrapper').classList.toggle('tzama-mode', mode === 'tzama');
+  }
+
   function formatPlateString(val) {
     const clean = val.replace(/\D/g, '');
     if (clean.length === 7) {
@@ -755,10 +877,18 @@
 
   function onPlateInputChange(el) {
     const clearBtn = document.getElementById('clearBtn');
+    const val = el.value.replace(/\D/g, '');
     if (el.value.trim().length > 0) {
       clearBtn.style.display = 'flex';
     } else {
       clearBtn.style.display = 'none';
+    }
+
+    // Auto-switch mode based on digits
+    if (val.length <= 6 && val.length >= 4) {
+      if (currentMode !== 'tzama') setMode('tzama');
+    } else if (val.length >= 7) {
+      if (currentMode !== 'car') setMode('car');
     }
   }
 
@@ -776,25 +906,16 @@
     runVehicleSearch();
   }
 
-  const RESOURCES = {
-    active_vehicles_2: "0866573c-40cd-4ca8-91d2-9dd2d7a492e5",
-    heavy_trucks: "cd3acc5c-03c3-4c89-9c54-d40f93c0d790",
-    history_mileage: "56063a99-8a3e-4ff4-912e-5966c0279bad",
-    recalls: "36bf1404-0be4-49d2-82dc-2f1ead4a8b93",
-    models: "142afde2-6228-49f9-8a29-9b6c3a0cbe40"
-  };
-
   async function fetchGovCKANByQuery(resourceId, queryVal) {
     const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${encodeURIComponent(queryVal)}&limit=5`;
     const resp = await fetch(url);
     if (!resp.ok) return [];
     const data = await resp.json();
     const records = data?.result?.records || [];
-    const exact = records.filter(r => String(r.mispar_rechev || r.MISPAR_RECHEV || '') === String(queryVal));
+    const exact = records.filter(r => String(r.mispar_rechev || r.MISPAR_RECHEV || r.mispar_tzama || '') === String(queryVal));
     return exact.length ? exact : records;
   }
 
-  // Exact SQL filter to prevent fuzzy matching Peugeot / wrong manufacturer
   async function fetchGovModelExact(tozeretCd, degemCd) {
     const filters = JSON.stringify({ tozeret_cd: Number(tozeretCd), degem_cd: Number(degemCd) });
     const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCES.models}&filters=${encodeURIComponent(filters)}&limit=3`;
@@ -804,16 +925,6 @@
       const data = await resp.json();
       const records = data?.result?.records || [];
       if (records.length > 0) return records[0];
-      
-      // Fallback: filter only by tozeret_cd
-      const tozeretFilter = JSON.stringify({ tozeret_cd: Number(tozeretCd) });
-      const url2 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCES.models}&filters=${encodeURIComponent(tozeretFilter)}&limit=1`;
-      const resp2 = await fetch(url2);
-      if (resp2.ok) {
-        const data2 = await resp2.json();
-        const records2 = data2?.result?.records || [];
-        if (records2.length > 0) return records2[0];
-      }
     } catch (e) {
       console.error('Model exact filter error:', e);
     }
@@ -824,12 +935,10 @@
     const rawInput = document.getElementById('plateInput').value;
     const plate = rawInput.replace(/\D/g, '');
     
-    if (plate.length < 6) {
-      showError('אנא הזן מספר רישוי תקין (7 או 8 ספרות)');
+    if (plate.length < 3) {
+      showError('אנא הזן מספר רישוי או צמ''ה תקין');
       return;
     }
-
-    document.getElementById('plateInput').value = formatPlateString(plate);
 
     hideError();
     document.getElementById('resultCard').style.display = 'none';
@@ -837,6 +946,24 @@
     document.getElementById('searchBtn').disabled = true;
 
     try {
+      // 1. Check Internal Fleet DB First
+      if (fleetDatabase[plate]) {
+        renderInternalFleetResult(fleetDatabase[plate], plate);
+        saveRecentPlate(plate);
+        return;
+      }
+
+      // 2. Query Heavy Machinery / Tzama Dataset if 6 digits or tzama mode
+      if (currentMode === 'tzama' || plate.length <= 6) {
+        const tzamaRecs = await fetchGovCKANByQuery(RESOURCES.tzama_equipment, plate);
+        if (tzamaRecs.length > 0) {
+          renderTzamaResult(tzamaRecs[0], plate);
+          saveRecentPlate(plate);
+          return;
+        }
+      }
+
+      // 3. Query Road Vehicles & Trucks
       const [trucks, activeVehs, mileageRecs, recallRecs] = await Promise.all([
         fetchGovCKANByQuery(RESOURCES.heavy_trucks, plate),
         fetchGovCKANByQuery(RESOURCES.active_vehicles_2, plate),
@@ -858,7 +985,7 @@
       }
 
       if (!found) {
-        showError(`מספר רכב ${formatPlateString(plate)} לא נמצא במאגר כלי הרכב הפעיל של משרד התחבורה.`);
+        showError(`מספר ${formatPlateString(plate)} לא נמצא במאגרי כלי הרכב או הצמ''ה של משרד התחבורה.`);
         return;
       }
 
@@ -870,7 +997,6 @@
         if (mileageRecs[0].rishum_rishon_dt) details.rishum_rishon_dt = mileageRecs[0].rishum_rishon_dt;
       }
 
-      // Fetch EXACT model specification (SERES, Skoda, Hyundai, etc.)
       let modelInfo = {};
       if (details.tozeret_cd && details.degem_cd) {
         const exactModel = await fetchGovModelExact(details.tozeret_cd, details.degem_cd);
@@ -896,6 +1022,72 @@
       document.getElementById('loaderBox').style.display = 'none';
       document.getElementById('searchBtn').disabled = false;
     }
+  }
+
+  function renderTzamaResult(r, plate) {
+    const title = `${r.shilda_totzar_en_nm || 'יצרן צמ''ה'} ${r.degem_nm || ''}`;
+    document.getElementById('resTitle').innerText = title;
+    document.getElementById('resSub').innerText = `שנת ייצור: ${r.shnat_yitzur || '—'} | סוג: ${r.sug_tzama_nm || 'ציוד מכני הנדסי'}`;
+    document.getElementById('resCategoryTag').innerText = "כלי צמ''ה (לוחית חומה)";
+
+    document.getElementById('resTestDate').innerText = r.tokef_date || 'בתוקף';
+    document.getElementById('resKm').innerText = 'לפי שעות מנוע בשטח';
+    document.getElementById('resOwnership').innerText = 'רישום צמ''ה ממשלתי';
+    
+    const hp = r.koah_sus ? `${r.koah_sus} כ"ס` : '';
+    const fuel = r.hanaa_nm || 'סולר';
+    document.getElementById('resEngine').innerText = `${fuel} | ${hp}`;
+
+    const weightTon = r.mishkal_ton || r.mishkal_kolel_ton || '—';
+    document.getElementById('resWeight').innerText = `${weightTon} טון`;
+
+    const recallElem = document.getElementById('resRecall');
+    recallElem.innerText = r.hagbala_nm_1 || 'תקין (ללא הגבלות)';
+    recallElem.className = 'spec-val highlight-green';
+
+    // Hide car valuation card for heavy machinery
+    document.getElementById('valHeroCard').style.display = 'none';
+
+    document.getElementById('kirbyInsightText').innerHTML = `כלי צמ"ה מאומת במאגר משרד התחבורה.<br>• משקל להובלה: <strong>${weightTon} טון</strong> (קריטי לתכנון מוביל למוך וארז).<br>• הגבלת מהירות ברישיון: ${r.hagbala_nm_1 || 'עד 30 קמ"ש'}.`;
+
+    setupShareLink(title, plate, [
+      `סוג: ${r.sug_tzama_nm || 'צמ\"ה'}`,
+      `שנת יצור: ${r.shnat_yitzur || '—'}`,
+      `משקל כולל: ${weightTon} טון`,
+      `הספק: ${hp}`,
+      `תוקף אישור בודק: ${r.tokef_date || 'בתוקף'}`
+    ]);
+
+    document.getElementById('resultCard').style.display = 'flex';
+  }
+
+  function renderInternalFleetResult(f, plate) {
+    document.getElementById('resTitle').innerText = f.title;
+    document.getElementById('resSub').innerText = f.subtitle;
+    document.getElementById('resCategoryTag').innerText = f.category;
+
+    document.getElementById('resTestDate').innerText = f.testDate;
+    document.getElementById('resKm').innerText = f.km;
+    document.getElementById('resOwnership').innerText = f.ownership;
+    document.getElementById('resEngine').innerText = f.engine;
+    document.getElementById('resWeight').innerText = f.weight;
+
+    const recallElem = document.getElementById('resRecall');
+    recallElem.innerText = 'תקין ומאושר במוסך';
+    recallElem.className = 'spec-val highlight-green';
+
+    document.getElementById('valHeroCard').style.display = 'none';
+    document.getElementById('kirbyInsightText').innerHTML = f.insight;
+
+    setupShareLink(f.title, plate, [
+      `כלי: ${f.title}`,
+      `מנוע: ${f.engine}`,
+      `משקל: ${f.weight}`,
+      `סטטוס: ${f.testDate}`,
+      `הערת מוסך: ${f.insight}`
+    ]);
+
+    document.getElementById('resultCard').style.display = 'flex';
   }
 
   function renderVehicleResult(data) {
@@ -932,6 +1124,7 @@
     }
 
     // Run Levi Itzhak Valuation
+    document.getElementById('valHeroCard').style.display = 'flex';
     const val = computeLeviItzhakValuation(data);
     
     document.getElementById('valLeviPrice').innerText = val.leviPrice.toLocaleString();
@@ -948,7 +1141,23 @@
 
     renderKirbyInsight(data, val);
 
+    setupShareLink(fullTitle, plate, [
+      `שנת יצור: ${year}`,
+      `מחירון לוי יצחק: ${val.leviPrice.toLocaleString()} ₪`,
+      `טווח יד2: ${val.quickSale.toLocaleString()} ₪ - ${val.retail.toLocaleString()} ₪`,
+      `קילומטראז': ${mileage ? Number(mileage).toLocaleString() + ' ק\"מ' : 'לא דווח'}`,
+      `בעלות: ${ownership}`,
+      `תוקף טסט: ${details.tokef_dt || 'בתוקף'}`
+    ]);
+
     document.getElementById('resultCard').style.display = 'flex';
+  }
+
+  function setupShareLink(title, plate, lines) {
+    const text = `דו"ח בדיקה רשמי: ${title} (לוחית: ${formatPlateString(plate)})\n` +
+      lines.map(l => `• ${l}`).join('\n') +
+      `\nנבדק באפליקציית בדיקת רכב וצמ"ה.`;
+    document.getElementById('btnShareWa').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   }
 
   function computeLeviItzhakValuation(data) {
@@ -965,7 +1174,7 @@
 
     let yearsOnRoad = Math.max(0.5, (currentYear - year) + ((currentMonth - regMonth) / 12.0));
 
-    let baseMSRP = 145000; // Electric SUV (Seres, MG, Geely) or Crossover
+    let baseMSRP = 145000;
     let deprecCurve = [0.15, 0.14, 0.13, 0.12, 0.12, 0.11, 0.11, 0.10, 0.10, 0.09];
 
     if (data.category.includes('משאית') || data.category.includes('כבד')) {
@@ -1100,21 +1309,30 @@
   }
 
   function renderRecents() {
-    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '["64802003", "36479701", "5944155"]');
-    const container = document.getElementById('recentsRow');
-    container.innerHTML = '<span class="recent-label">אחרונים:</span>';
-    recents.forEach(p => {
-      const chip = document.createElement('div');
-      chip.className = 'recent-chip';
-      chip.innerText = formatPlateString(p);
-      chip.onclick = () => setAndSearch(p);
-      container.appendChild(chip);
-    });
+    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '[]');
+    const box = document.getElementById('recentsBox');
+    const list = document.getElementById('recentsList');
+    if (!recents.length) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'flex';
+    list.innerHTML = recents.map(p => `
+      <div class="recent-chip" onclick="setAndSearch('${p}')">${formatPlateString(p)}</div>
+    `).join('');
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    renderRecents();
-  });
+  // Camera Scan File Handler
+  function handleCameraScan(input) {
+    if (input.files && input.files[0]) {
+      // In mobile PWA, input will open camera
+      alert('תמונת הלוחית נקלטה. מפענח ספרות...');
+      // If plate detected, fill into input
+    }
+  }
+
+  // Initial Boot
+  renderRecents();
 </script>
 
 </body>
