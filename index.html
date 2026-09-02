@@ -24,8 +24,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tesseract.js for Real Client-Side License Plate OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
   <style>
     :root {
       --bg: #090b0e;
@@ -1925,32 +1923,60 @@
     const scanOverlay = document.getElementById('ocrScanBar');
     const statusMsg = document.getElementById('ocrStatusMsg');
     scanOverlay.style.display = 'flex';
-    statusMsg.innerText = 'מזהה לוחית רישוי...';
+    statusMsg.innerText = 'סורק ומפענח לוחית רישוי (Plate AI)...';
     hideError();
 
     try {
-      const best = await PlateOCR.recognize(file, currentMode, (m) => { statusMsg.innerText = m; });
+      const formData = new FormData();
+      formData.append('upload', file);
+      formData.append('regions', 'il');
 
-      if (best && best.plate && best.plate.length >= 5) {
-        console.log('PlateOCR result:', best);
-        const plateInput = document.getElementById('plateInput');
-        plateInput.value = formatPlateString(best.plate);
-        onPlateInputChange(plateInput);
-        runVehicleSearch();
+      const response = await fetch('https://api.platerecognizer.com/v1/plate-reader/', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Token 88ebc7ef8ce3fd675df9ebdc9279f7741bb38987'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('שגיאת שרת זיהוי: ' + response.status);
+      }
+
+      const data = await response.json();
+      console.log('Plate Recognizer API Result:', data);
+
+      if (data && data.results && data.results.length > 0) {
+        const topResult = data.results[0];
+        const rawPlate = topResult.plate ? topResult.plate.toUpperCase().replace(/[^0-9]/g, '') : '';
+        
+        if (rawPlate.length >= 5) {
+          statusMsg.innerText = 'לוחית זוהתה בהצלחה: ' + formatPlateString(rawPlate);
+          const plateInput = document.getElementById('plateInput');
+          plateInput.value = formatPlateString(rawPlate);
+          onPlateInputChange(plateInput);
+          setTimeout(() => {
+            runVehicleSearch();
+          }, 300);
+        } else {
+          showError('לא זוהתה לוחית קריאה בתמונה. נסה לצלם שוב בבירור או הקלד ידנית.');
+        }
       } else {
-        showError('לא זוהתה לוחית בתמונה. צלם ישר מול הלוחית, קרוב ככל האפשר, ונסה שוב — או הקלד ידנית.');
+        showError('לא זוהתה לוחית רכב בתמונה. ודא שהלוחית ברורה ומוארת ונסה שוב.');
       }
     } catch (err) {
-      console.error('OCR fatal error:', err);
-      await PlateOCR.resetWorker();
-      showError('שגיאה בסריקת התמונה. אנא נסה שוב או הקלד את המספר ידנית.');
+      console.error('ALPR Error:', err);
+      showError('שגיאה בסריקת התמונה. אנא נסה שוב או הקלד ידנית.');
     } finally {
-      scanOverlay.style.display = 'none';
-      input.value = '';
+      setTimeout(() => {
+        scanOverlay.style.display = 'none';
+        input.value = '';
+      }, 400);
     }
   }
 
-  // Initial Boot
+  // Also remove old PlateOCR if present
+  
   renderRecents();
 
   // Warm the OCR engine the moment the user reaches for the camera, so the
