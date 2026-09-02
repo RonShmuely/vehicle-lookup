@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="בדיקת רכב וצמ''ה">
-  <meta name="application-name" content="בדיקת רכב, צמ''ה ומחירון שטח">
+  <meta name="application-name" content="בדיקת רכב וצמ"ה שטח">
   <meta name="theme-color" content="#0b0d10">
   <title>בדיקת רכב וצמ''ה | לוי יצחק & משרד התחבורה</title>
 
@@ -553,29 +553,7 @@
       margin-top: 2px;
     }
 
-    /* Kirby Field Insight Note */
-    .kirby-insight-box {
-      background: #191612;
-      border: 1px solid #78350f;
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .kirby-insight-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #fbbf24;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .kirby-insight-text {
-      font-size: 13px;
-      line-height: 1.5;
-      color: #fef3c7;
-    }
+    
 
     /* Actions: 1-Tap WhatsApp Share & PDF Print */
     .share-actions-row {
@@ -632,9 +610,9 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand">
-      <div class="brand-icon">🚜</div>
+      <div class="brand-icon"></div>
       <div class="brand-text">
-        <h1>בדיקת רכב, צמ''ה ומחירון</h1>
+        <h1>בדיקת רכב וצמ"ה</h1>
       </div>
     </div>
     <div class="live-badge">
@@ -646,10 +624,10 @@
   <!-- Type Switcher: Car vs Heavy Machinery (צמ"ה) -->
   <div class="type-switcher">
     <button type="button" class="type-btn active car" id="btnModeCar" onclick="setMode('car')">
-      🚗 רכב פרטי / מסחרי
+       רכב כביש
     </button>
     <button type="button" class="type-btn tzama" id="btnModeTzama" onclick="setMode('tzama')">
-      🚜 כלי צמ''ה (לוחית חומה)
+       ציוד צמ"ה
     </button>
   </div>
 
@@ -685,7 +663,7 @@
       />
       <!-- Camera Scan Button -->
       <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה">
-        📷
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
       </button>
       <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraScan(this)">
       <button type="button" id="clearBtn" class="plate-clear-btn" onclick="clearPlateInput()">✕</button>
@@ -694,7 +672,7 @@
 
   <!-- Search Button -->
   <button class="btn-search" id="searchBtn" onclick="runVehicleSearch()">
-    <span>🔍</span>
+    <span></span>
     <span>בדוק רכב ושקלל מחירון</span>
   </button>
 
@@ -801,22 +779,13 @@
       </div>
     </div>
 
-    <!-- Card 3: Kirby Field Insight Note -->
-    <div class="kirby-insight-box">
-      <div class="kirby-insight-title">
-        <span>💡</span>
-        <span>הערת שטח של קירבי</span>
-      </div>
-      <div class="kirby-insight-text" id="kirbyInsightText">
-        ניתוח שטח יופיע כאן בהתאם לנתוני הבדיקה.
-      </div>
-    </div>
+    
 
     <!-- Card 4: Actions (1-Tap WhatsApp Share & Print) -->
     <div class="card" style="padding:10px 14px;">
       <div class="share-actions-row">
         <a href="#" id="btnShareWa" target="_blank" class="btn-action-wa">
-          <span>📲</span>
+          <span></span>
           <span>שתף דו"ח בדיקה בוואטסאפ</span>
         </a>
         <button type="button" class="btn-action-print" onclick="window.print()">
@@ -973,7 +942,7 @@
 
       let found = false;
       let details = {};
-      let category = 'רכב פרטי / מסחרי';
+      let category = 'רכב כביש';
 
       if (trucks.length > 0) {
         found = true;
@@ -1116,7 +1085,7 @@
 
     const recallElem = document.getElementById('resRecall');
     if (recalls && recalls.length > 0) {
-      recallElem.innerText = `⚠️ ${recalls.length} ריקול פתוח`;
+      recallElem.innerText = ` ${recalls.length} ריקול פתוח`;
       recallElem.className = 'spec-val highlight-red';
     } else {
       recallElem.innerText = 'אין (תקין)';
@@ -1139,7 +1108,7 @@
     deltaElem.innerText = `${val.totalAdjustmentPct > 0 ? '+' : ''}${val.totalAdjustmentPct}%`;
     deltaElem.className = `val-delta-badge ${val.totalAdjustmentPct >= 0 ? 'positive' : ''}`;
 
-    renderKirbyInsight(data, val);
+    
 
     setupShareLink(fullTitle, plate, [
       `שנת יצור: ${year}`,
@@ -1269,27 +1238,7 @@
     };
   }
 
-  function renderKirbyInsight(data, val) {
-    const notes = [];
-    const own = data.ownership || '';
-    const km = Number(data.mileage || 0);
-
-    if (km >= 250000) {
-      notes.push(`הרכב עבר ${km.toLocaleString()} ק"מ. מחירי הסגירה ביד2 צונחים לאזור ה-${val.quickSale.toLocaleString()} ₪.`);
-    } else if (km >= 200000) {
-      notes.push(`קילומטראז' גבוה (${km.toLocaleString()} ק"מ) — מחייב בדיקת היסטוריית טיפולים יסודית.`);
-    }
-
-    if (own.includes('ליסינג') || own.includes('החכר') || own.includes('השכרה')) {
-      notes.push(`מקוריות ${own} גוררת הפחתה רשמית של ${Math.abs(val.ownerPct)}% במחירון לוי יצחק.`);
-    }
-
-    if (data.recalls && data.recalls.length > 0) {
-      notes.push(`⚠️ קיימות ${data.recalls.length} קריאות שירות (ריקול) פתוחות במוסכי היבואן.`);
-    }
-
-    document.getElementById('kirbyInsightText').innerHTML = notes.join('<br>• ');
-  }
+  
 
   function showError(msg) {
     const el = document.getElementById('errorBox');
@@ -1326,7 +1275,7 @@
   function handleCameraScan(input) {
     if (input.files && input.files[0]) {
       // In mobile PWA, input will open camera
-      alert('תמונת הלוחית נקלטה. מפענח ספרות...');
+      
       // If plate detected, fill into input
     }
   }
