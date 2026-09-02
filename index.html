@@ -859,7 +859,7 @@
     <!-- Scanning Overlay -->
     <div class="ocr-scanning-bar" id="ocrScanBar">
       <div class="ocr-spinner"></div>
-      <span>מפענח לוחית במצלמה...</span>
+      <span id="ocrStatusMsg">מפענח לוחית במצלמה...</span>
     </div>
   </div>
 
@@ -1528,12 +1528,16 @@
     `).join('');
   }
 
-  // Real OCR & Camera Pipeline via Tesseract.js & HTML5 Canvas
+  // ===================================================================
+  // ROBUST MULTI-PASS ISRAELI LICENSE PLATE OCR PIPELINE (Tesseract.js)
+  // ===================================================================
   async function handleRealCameraOCR(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
     const scanOverlay = document.getElementById('ocrScanBar');
+    const statusMsg = document.getElementById('ocrStatusMsg');
     scanOverlay.style.display = 'flex';
+    statusMsg.innerText = 'מאתר לוחית צהובה בתמונה...';
     hideError();
 
     try {
@@ -1550,29 +1554,105 @@
         img.src = imgUrl;
       });
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
       const maxDim = 1200;
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
         else { w = Math.round(w * (maxDim / h)); h = maxDim; }
       }
-      canvas.width = w;
-      canvas.height = h;
-      ctx.drawImage(img, 0, 0, w, h);
 
-      const { data: { text } } = await Tesseract.recognize(canvas, 'eng', {
-        tessedit_char_whitelist: '0123456789ILil-'
-      });
-
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = w;
+      baseCanvas.height = h;
+      const baseCtx = baseCanvas.getContext('2d');
+      baseCtx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(imgUrl);
+
+      // STEP 1: Scan for Israeli Yellow License Plate Region (RGB Color Filter)
+      const imgData = baseCtx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+      let yellowXs = [], yellowYs = [];
+
+      for (let y = 0; y < h; y += 3) {
+        for (let x = 0; x < w; x += 3) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          // Israeli plate yellow condition: strong Red & Green, low Blue
+          if (r > 120 && g > 100 && b < 100 && (r + g) > (2.2 * b)) {
+            yellowXs.push(x);
+            yellowYs.push(y);
+          }
+        }
+      }
+
+      let cropCanvas = document.createElement('canvas');
+      let cropCtx = cropCanvas.getContext('2d');
+      let usedCrop = false;
+
+      if (yellowXs.length > 80) {
+        // Calculate bounding box of yellow cluster
+        yellowXs.sort((a, b) => a - b);
+        yellowYs.sort((a, b) => a - b);
+        
+        // Discard extreme 2% noise outliers
+        const p1 = Math.floor(yellowXs.length * 0.02);
+        const p99 = Math.floor(yellowXs.length * 0.98);
+        
+        let minX = Math.max(0, yellowXs[p1] - 15);
+        let maxX = Math.min(w, yellowXs[p99] + 15);
+        let minY = Math.max(0, yellowYs[p1] - 12);
+        let maxY = Math.min(h, yellowYs[p99] + 12);
+
+        let cropW = maxX - minX;
+        let cropH = maxY - minY;
+        let ar = cropW / (cropH || 1);
+
+        if (cropW > 80 && cropH > 25 && ar >= 1.8 && ar <= 7.0) {
+          cropCanvas.width = cropW;
+          cropCanvas.height = cropH;
+          cropCtx.drawImage(baseCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+          usedCrop = true;
+        }
+      }
+
+      // Fallback: If no yellow cluster, take the center-horizontal 40% band of the image
+      if (!usedCrop) {
+        let cropY = Math.round(h * 0.35);
+        let cropH = Math.round(h * 0.35);
+        cropCanvas.width = w;
+        cropCanvas.height = cropH;
+        cropCtx.drawImage(baseCanvas, 0, cropY, w, cropH, 0, 0, w, cropH);
+      }
+
+      // STEP 2: Preprocess Crop for OCR (High Contrast Binarization)
+      const cropData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
+      const cData = cropData.data;
+      for (let i = 0; i < cData.length; i += 4) {
+        const gray = 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
+        // Binarize digits against yellow plate background
+        const val = gray < 115 ? 0 : 255;
+        cData[i] = val;
+        cData[i+1] = val;
+        cData[i+2] = val;
+      }
+      cropCtx.putImageData(cropData, 0, 0);
+
+      statusMsg.innerText = 'מפענח ספרות לוחית...';
+
+      // STEP 3: Run Tesseract OCR on the isolated plate canvas
+      const { data: { text } } = await Tesseract.recognize(cropCanvas, 'eng', {
+        tessedit_char_whitelist: '0123456789ILil-.: '
+      });
 
       const digitsMatch = text.replace(/[^0-9]/g, '');
       const candidates = text.match(/\b\d{5,8}\b/g) || [];
       
       let detectedPlate = '';
       if (candidates.length > 0) {
+        // Pick longest clean candidate
+        candidates.sort((a, b) => b.length - a.length);
         detectedPlate = candidates[0];
       } else if (digitsMatch.length >= 5 && digitsMatch.length <= 8) {
         detectedPlate = digitsMatch;
