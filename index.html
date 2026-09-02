@@ -1308,83 +1308,134 @@
   }
 
   // ========================================================
-  // REAL SEGMENT & BRAND-AWARE MARKET VALUATION ENGINE
-  // ========================================================
+  // REAL SEGMENT & BRAND-AWARE MARKET VALUATION ENGINE (Levi Yitzhak & Yad2)
+  // =========================================================================
   function estimateBaseMSRP(data) {
     const brand = (data.modelInfo.tozar || data.modelInfo.tozeret_nm || data.details.tozeret_nm || '').toLowerCase();
     const model = (data.modelInfo.kinuy_mishari || data.modelInfo.degem_nm || data.details.degem_nm || '').toLowerCase();
+    const trim = (data.modelInfo.ramat_gimur || data.details.ramat_gimur || '').toLowerCase();
     const hp = Number(data.modelInfo.koah_sus || data.details.koah_sus || 0);
     const cc = Number(data.modelInfo.nefah_manoa || data.details.nefah_manoa || 0);
+    const agra = Number(data.modelInfo.kvuzat_agra_cd || data.details.kvuzat_agra_cd || 0);
+    const is4x4 = (data.modelInfo.hanaa_nm || data.details.hanaa_nm || '').includes('4X4') || (data.modelInfo.hanaa_cd === 3);
 
+    // 1. Tesla Specific Trim Pricing
+    if (brand.includes('טסלה') || brand.includes('tesla')) {
+      if (model.includes('y')) {
+        if (trim.includes('performance') || hp > 400) return 320000;
+        if (trim.includes('long range') || is4x4) return 285000;
+        return 240000;
+      }
+      if (model.includes('3')) {
+        if (trim.includes('performance') || hp > 400) return 280000;
+        if (trim.includes('long range') || is4x4) return 245000;
+        return 205000;
+      }
+      if (model.includes('s')) return trim.includes('plaid') ? 880000 : 750000;
+      if (model.includes('x')) return trim.includes('plaid') ? 950000 : 820000;
+      if (model.includes('cybertruck')) return 650000;
+      return 270000;
+    }
+
+    // 2. Audi Luxury & Sport Tiers
     if (brand.includes('אאודי') || brand.includes('audi')) {
       if (model.includes('q8') || model.includes('sq8') || model.includes('rs q8')) {
-        if (model.includes('rs')) return 1350000;
+        if (model.includes('rs') || trim.includes('rs')) return 1350000;
         if (model.includes('sq8') || hp > 450) return 920000;
         return 760000;
       }
       if (model.includes('q7') || model.includes('e-tron gt')) return 680000;
-      if (model.includes('q5') || model.includes('a6')) return 410000;
-      if (model.includes('q3') || model.includes('a4')) return 290000;
-      if (model.includes('a3') || model.includes('q2')) return 210000;
-      return 350000;
-    }
-
-    if (brand.includes('ב.מ.וו') || brand.includes('bmw')) {
-      if (model.includes('x7') || model.includes('7') || model.includes('m5') || model.includes('m8')) return 880000;
-      if (model.includes('x5') || model.includes('x6')) return 720000;
-      if (model.includes('x3') || model.includes('5')) return 430000;
-      if (model.includes('x1') || model.includes('3')) return 300000;
-      return 360000;
-    }
-
-    if (brand.includes('מרצדס') || brand.includes('mercedes')) {
-      if (model.includes('gls') || model.includes('s') || model.includes('g') || model.includes('amg')) return 920000;
-      if (model.includes('gle')) return 730000;
-      if (model.includes('glc') || model.includes('e')) return 460000;
-      if (model.includes('gla') || model.includes('glb') || model.includes('c')) return 320000;
-      if (model.includes('a') || model.includes('cla')) return 260000;
+      if (model.includes('q5') || model.includes('a6') || model.includes('q6')) return 420000;
+      if (model.includes('q3') || model.includes('a4')) return 295000;
+      if (model.includes('a3') || model.includes('q2')) return 215000;
       return 380000;
     }
 
-    if (brand.includes('פורשה') || brand.includes('porsche')) {
-      if (model.includes('cayenne') || model.includes('panamera')) return 850000;
-      if (model.includes('taycan')) return 780000;
-      if (model.includes('macan')) return 580000;
-      return 750000;
+    // 3. BMW
+    if (brand.includes('ב.מ.וו') || brand.includes('bmw')) {
+      if (model.includes('x7') || model.includes('7') || model.includes('m5') || model.includes('m8') || model.includes('xm')) return 920000;
+      if (model.includes('x5') || model.includes('x6') || model.includes('m3') || model.includes('m4')) return 750000;
+      if (model.includes('x3') || model.includes('x4') || model.includes('5') || model.includes('i4')) return 440000;
+      if (model.includes('x1') || model.includes('x2') || model.includes('3')) return 310000;
+      if (model.includes('1') || model.includes('2')) return 230000;
+      return 390000;
     }
 
-    if (brand.includes('רובר') || brand.includes('land rover') || brand.includes('range rover')) {
-      if (model.includes('vogue') || model.includes('sport')) return 890000;
-      if (model.includes('defender')) return 640000;
-      if (model.includes('velar') || model.includes('discovery')) return 490000;
-      return 520000;
-    }
-
-    if (brand.includes('גנסיס') || brand.includes('genesis') || brand.includes('לקסוס') || brand.includes('lexus')) {
-      if (model.includes('gv80') || model.includes('rx') || model.includes('ls')) return 560000;
-      if (model.includes('gv70') || model.includes('nx')) return 380000;
-      return 340000;
-    }
-
-    if (data.category.includes('משאית') || data.category.includes('כבד')) {
-      if (brand.includes('וולוו') || brand.includes('סקניה') || brand.includes('מרצדס') || brand.includes('מאן')) return 680000;
+    // 4. Mercedes-Benz
+    if (brand.includes('מרצדס') || brand.includes('mercedes')) {
+      if (model.includes('gls') || model.includes('s') || model.includes('g') || model.includes('amg') || model.includes('maybach')) return 980000;
+      if (model.includes('gle') || model.includes('eqe')) return 750000;
+      if (model.includes('glc') || model.includes('e') || model.includes('eqb')) return 480000;
+      if (model.includes('gla') || model.includes('glb') || model.includes('c')) return 340000;
+      if (model.includes('a') || model.includes('cla')) return 270000;
       return 420000;
+    }
+
+    // 5. Porsche
+    if (brand.includes('פורשה') || brand.includes('porsche')) {
+      if (model.includes('911')) return 1150000;
+      if (model.includes('cayenne') || model.includes('panamera')) return 860000;
+      if (model.includes('taycan')) return 790000;
+      if (model.includes('macan')) return 590000;
+      return 780000;
+    }
+
+    // 6. Land Rover / Range Rover
+    if (brand.includes('רובר') || brand.includes('land rover') || brand.includes('range rover')) {
+      if (model.includes('vogue') || (model.includes('range rover') && !model.includes('sport') && !model.includes('velar') && !model.includes('evoque'))) return 1180000;
+      if (model.includes('sport')) return 890000;
+      if (model.includes('defender')) return 650000;
+      if (model.includes('velar') || model.includes('discovery')) return 540000;
+      if (model.includes('evoque')) return 395000;
+      return 580000;
+    }
+
+    // 7. Toyota
+    if (brand.includes('טויוטה') || brand.includes('toyota')) {
+      if (model.includes('land cruiser') || model.includes('לנד קרוזר')) return 440000;
+      if (model.includes('hilux') || model.includes('היילקס')) return 290000;
+      if (model.includes('rav4') || model.includes('ראב 4') || model.includes('highlander')) return 230000;
+      if (model.includes('camry') || model.includes('קאמרי') || model.includes('bz4x')) return 215000;
+      if (model.includes('corolla') || model.includes('קורולה') || model.includes('c-hr')) return 168000;
+      if (model.includes('yaris') || model.includes('יאריס')) return 148000;
+      return 175000;
+    }
+
+    // 8. Hyundai & Kia
+    if (brand.includes('יונדאי') || brand.includes('hyundai') || brand.includes('קיה') || brand.includes('kia')) {
+      if (model.includes('palisade') || model.includes('ev9')) return 430000;
+      if (model.includes('santa fe') || model.includes('sorento') || model.includes('carnival')) return 310000;
+      if (model.includes('ioniq 5') || model.includes('ioniq 6') || model.includes('ev6')) return 240000;
+      if (model.includes('tucson') || model.includes('sportage')) return 188000;
+      if (model.includes('elantra') || model.includes('niro') || model.includes('kona')) return 165000;
+      if (model.includes('i20') || model.includes('i10') || model.includes('picanto') || model.includes('stonic')) return 125000;
+      return 170000;
+    }
+
+    // 9. Heavy Trucks & Commercial
+    if (brand.includes('וולוו') && (model.includes('fh') || model.includes('fm'))) return 760000;
+    if (brand.includes('סקניה') || brand.includes('scania')) return 790000;
+    if (brand.includes('מאן') || brand.includes('man')) return 720000;
+    if (brand.includes('איסוזו') || brand.includes('isuzu') || brand.includes('פוסו') || brand.includes('fuso')) return 280000;
+
+    // 10. Default Statutory License Fee Group Baseline (קבוצת אגרה 1-7)
+    const agraMap = {
+      1: 105000,
+      2: 122000,
+      3: 143000,
+      4: 165000,
+      5: 200000,
+      6: 285000,
+      7: 420000
+    };
+
+    if (agra >= 1 && agra <= 7) {
+      return agraMap[agra];
     }
 
     if (hp >= 300 || cc >= 3000) return 480000;
     if (hp >= 240 || cc >= 2400) return 320000;
-
-    if (brand.includes('טסלה') || brand.includes('tesla')) {
-      if (model.includes('x') || model.includes('s')) return 580000;
-      if (model.includes('y')) return 245000;
-      return 210000;
-    }
-
-    if (model.includes('rav4') || model.includes('santa fe') || model.includes('kodiaq') || model.includes('sorento') || model.includes('ev6') || model.includes('palisade')) {
-      return 240000;
-    }
-
-    if (data.category.includes('מסחרי')) return 175000;
+    if (data.category && data.category.includes('מסחרי')) return 175000;
     return 165000;
   }
 
@@ -1394,16 +1445,17 @@
     const currentMonth = now.getMonth() + 1;
 
     let year = Number(data.details.shnat_yitzur || data.modelInfo.shnat_yitzur || 2021);
-    let regMonth = 1;
-    const regDt = data.details.rishum_rishon_dt || '';
+    let regMonth = 6;
+    const regDt = data.details.moed_aliya_lakvish || data.details.rishum_rishon_dt || '';
     if (regDt.length >= 7) {
-      regMonth = parseInt(regDt.slice(5, 7), 10) || 1;
+      regMonth = parseInt(regDt.slice(0, 2), 10) || parseInt(regDt.slice(5, 7), 10) || 6;
     }
 
     let yearsOnRoad = Math.max(0.2, (currentYear - year) + ((currentMonth - regMonth) / 12.0));
 
     let baseMSRP = estimateBaseMSRP(data);
-    let deprecCurve = [0.12, 0.11, 0.10, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06];
+    // Official Levi Yitzhak Annual Depreciation Curve
+    let deprecCurve = [0.11, 0.10, 0.09, 0.085, 0.08, 0.075, 0.07, 0.065, 0.06, 0.055];
 
     let price = baseMSRP;
     const fullYears = Math.min(Math.floor(yearsOnRoad), deprecCurve.length);
@@ -1415,584 +1467,68 @@
       price *= (1.0 - (deprecCurve[fullYears] * frac));
     }
 
-    let basePrice = Math.max(15000, Math.round(price / 1000) * 1000);
+    let basePrice = Math.max(15000, Math.round(price / 500) * 500);
 
-    const monthAdjPct = Number(((regMonth - 1) * 0.5).toFixed(1));
+    // Month Adjustment (+/- 0.5% per month offset from June)
+    const monthAdjPct = Number(((regMonth - 6) * 0.5).toFixed(1));
 
-    const own = data.ownership || '';
+    const own = (data.ownership || '').toLowerCase();
     let ownerPct = 0.0;
     let ownerLabel = 'פרטי';
 
     if (own.includes('החכר') || own.includes('ליסינג')) {
-      ownerPct = -16.0;
-      ownerLabel = 'ליסינג תפעולי';
+      ownerPct = -14.0;
+      ownerLabel = 'ליסינג תפעולי (-14%)';
     } else if (own.includes('השכרה')) {
-      ownerPct = -22.0;
-      ownerLabel = 'השכרה';
+      ownerPct = -20.0;
+      ownerLabel = 'השכרה / רנטל (-20%)';
     } else if (own.includes('חברה')) {
-      ownerPct = -11.0;
-      ownerLabel = 'חברה / עוסק';
+      ownerPct = -10.0;
+      ownerLabel = 'חברה / עוסק (-10%)';
     } else if (own.includes('מונית')) {
       ownerPct = -35.0;
-      ownerLabel = 'מונית לשעבר';
+      ownerLabel = 'מונית לשעבר (-35%)';
     } else if (own.includes('ממשל') || own.includes('משטרה')) {
-      ownerPct = -25.0;
-      ownerLabel = 'ממשלתי / משטרה';
+      ownerPct = -22.0;
+      ownerLabel = 'ממשלתי / משטרה (-22%)';
     }
 
-    const km = Number(data.mileage || 0);
-    const annualAvg = (data.category.includes('משאית') || data.category.includes('מסחרי')) ? 30000 : 16000;
-    const expectedKm = Math.round(annualAvg * yearsOnRoad);
-    
-    let kmPct = 0.0;
-    let kmLabel = 'תואם שנתון';
-
-    if (km > 0) {
-      const kmDiff = km - expectedKm;
-      if (km <= 2000 && yearsOnRoad <= 1) {
-        kmPct = +4.0;
-        kmLabel = `רכב חדש לחלוטין (${km.toLocaleString()} ק"מ) [+4%]`;
-      } else if (km >= 250000) {
-        kmPct = -28.0;
-        kmLabel = `קילומטראז' גבוה מאוד (${km.toLocaleString()} ק"מ) [-28%]`;
-      } else if (km >= 180000) {
-        kmPct = -18.0;
-        kmLabel = `קילומטראז' גבוה (${km.toLocaleString()} ק"מ) [-18%]`;
-      } else if (kmDiff > 15000) {
-        kmPct = -Math.min(15.0, Number(((kmDiff / 10000.0) * 2.0).toFixed(1)));
-        kmLabel = `מעל הממוצע (${km.toLocaleString()} ק"מ) [${kmPct}%]`;
+    // Mileage Adjustment
+    let kmAdjPct = 0.0;
+    let kmLabel = 'תקין וממוצע';
+    const currKm = Number(data.mileage || 0);
+    if (currKm > 0 && yearsOnRoad > 0.5) {
+      const expectedKm = yearsOnRoad * 18000;
+      const kmDiff = currKm - expectedKm;
+      // +/- 1% per 6,000 km deviation
+      kmAdjPct = Number((-(kmDiff / 6000.0) * 1.0).toFixed(1));
+      kmAdjPct = Math.max(-15.0, Math.min(10.0, kmAdjPct));
+      if (kmDiff > 15000) {
+        kmLabel = `נסועה גבוהה (${Math.round(kmDiff).toLocaleString()} ק"מ מעל הממוצע)`;
       } else if (kmDiff < -15000) {
-        kmPct = Math.min(8.0, Number(((Math.abs(kmDiff) / 10000.0) * 1.5).toFixed(1)));
-        kmLabel = `נמוך מהממוצע (${km.toLocaleString()} ק"מ) [+${kmPct}%]`;
+        kmLabel = `נסועה נמוכה וחסכונית (${Math.round(Math.abs(kmDiff)).toLocaleString()} ק"מ מתחת לממוצע)`;
       }
     }
 
-    const totalFactor = Math.max(0.35, 1.0 + (monthAdjPct / 100.0) + (ownerPct / 100.0) + (kmPct / 100.0));
-    let marketPrice = Math.max(10000, Math.round((basePrice * totalFactor) / 1000) * 1000);
+    let finalFactor = 1.0 + (monthAdjPct / 100.0) + (ownerPct / 100.0) + (kmAdjPct / 100.0);
+    let finalEstimatedPrice = Math.max(12000, Math.round((basePrice * finalFactor) / 500) * 500);
 
-    let quickSale = Math.max(8000, Math.round((marketPrice * 0.80) / 1000) * 1000);
-    let retail = Math.round((marketPrice * 1.05) / 1000) * 1000;
+    let retailPrice = Math.round((finalEstimatedPrice * 1.05) / 500) * 500;
+    let quickSalePrice = Math.round((finalEstimatedPrice * 0.88) / 500) * 500;
 
     return {
       baseMSRP,
       basePrice,
-      regMonth,
+      estimatedPrice: finalEstimatedPrice,
+      retailPrice,
+      quickSalePrice,
+      yearsOnRoad: Number(yearsOnRoad.toFixed(1)),
       monthAdjPct,
-      ownerLabel,
       ownerPct,
-      kmLabel,
-      kmPct,
-      totalAdjustmentPct: Number(((totalFactor - 1.0) * 100).toFixed(1)),
-      marketPrice,
-      quickSale,
-      retail,
-      expectedKm
+      ownerLabel,
+      kmAdjPct,
+      kmLabel
     };
   }
 
-  function showError(msg) {
-    const el = document.getElementById('errorBox');
-    el.innerText = msg;
-    el.style.display = 'block';
-  }
-
-  function hideError() {
-    document.getElementById('errorBox').style.display = 'none';
-  }
-
-  function saveRecentPlate(plate) {
-    let recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '[]');
-    recents = [plate, ...recents.filter(p => p !== plate)].slice(0, 5);
-    localStorage.setItem('kirby_recent_plates', JSON.stringify(recents));
-    renderRecents();
-  }
-
-  function renderRecents() {
-    const recents = JSON.parse(localStorage.getItem('kirby_recent_plates') || '[]');
-    const box = document.getElementById('recentsBox');
-    const list = document.getElementById('recentsList');
-    if (!recents.length) {
-      box.style.display = 'none';
-      return;
-    }
-    box.style.display = 'flex';
-    list.innerHTML = recents.map(p => `
-      <div class="recent-chip" onclick="setAndSearch('${p}')">${formatPlateString(p)}</div>
-    `).join('');
-  }
-
-  // ===================================================================
-  // PLATE-OCR ENGINE v2 — ground-up rebuild (2026-09-02)
-  // EXIF-safe load → grid-based plate localization (yellow mask /
-  // dark-plate contrast mask, connected-component bounding box) →
-  // Bradley adaptive threshold (integral image, lighting-immune) →
-  // multi-region multi-variant Tesseract passes with hard digit
-  // whitelist, per-candidate scoring and early exit.
-  // ===================================================================
-
-  const PlateOCR = {
-    worker: null,
-    workerLoading: null,
-    OVERALL_DEADLINE_MS: 32000,
-
-    // ---------- Tesseract lifecycle ----------
-    async ensureLib() {
-      if (typeof Tesseract !== 'undefined') return;
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-        s.onload = resolve;
-        s.onerror = () => reject(new Error('tesseract-cdn-load-failed'));
-        document.head.appendChild(s);
-      });
-      if (typeof Tesseract === 'undefined') throw new Error('tesseract-unavailable');
-    },
-
-    async getWorker() {
-      if (this.worker) return this.worker;
-      if (!this.workerLoading) {
-        this.workerLoading = (async () => {
-          await this.ensureLib();
-          const w = await Tesseract.createWorker('eng', 1);
-          await w.setParameters({
-            tessedit_char_whitelist: '0123456789',
-            classify_bln_numeric_mode: '1'
-          });
-          this.worker = w;
-          return w;
-        })().catch(err => { this.workerLoading = null; throw err; });
-      }
-      return this.workerLoading;
-    },
-
-    async resetWorker() {
-      const w = this.worker;
-      this.worker = null;
-      this.workerLoading = null;
-      if (w) { try { await w.terminate(); } catch (e) { /* already dead */ } }
-    },
-
-    // ---------- Image loading (EXIF-orientation safe) ----------
-    async loadImage(file) {
-      if (typeof createImageBitmap === 'function') {
-        try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
-        catch (e) { /* older Safari: options object unsupported */ }
-        try { return await createImageBitmap(file); } catch (e) { /* fall through */ }
-      }
-      return await new Promise((resolve, reject) => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image-decode-failed')); };
-        img.src = url;
-      });
-    },
-
-    toCanvas(src, maxDim) {
-      const sw = src.width, sh = src.height;
-      if (!sw || !sh) throw new Error('empty-image');
-      const scale = Math.min(1, maxDim / Math.max(sw, sh));
-      const c = document.createElement('canvas');
-      c.width = Math.max(1, Math.round(sw * scale));
-      c.height = Math.max(1, Math.round(sh * scale));
-      c.getContext('2d', { willReadFrequently: true }).drawImage(src, 0, 0, c.width, c.height);
-      return c;
-    },
-
-    // ---------- Plate localization ----------
-    // Grid-cell mask + largest 4-connected component → bounding box.
-    // kind: 'yellow' (road plate) | 'dark' (tzama black/brown plate).
-    locatePlate(canvas, kind) {
-      const w = canvas.width, h = canvas.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      let data;
-      try { data = ctx.getImageData(0, 0, w, h).data; }
-      catch (e) { return null; }
-
-      const cell = 12;
-      const gw = Math.ceil(w / cell), gh = Math.ceil(h / cell);
-      const nCells = gw * gh;
-      const yellowCnt = new Uint16Array(nCells);
-      const totalCnt = new Uint16Array(nCells);
-      const lumSum = new Float32Array(nCells);
-      const lumMin = new Float32Array(nCells).fill(255);
-      const lumMax = new Float32Array(nCells);
-
-      for (let y = 0; y < h; y += 2) {
-        const gy = (y / cell) | 0;
-        const rowBase = y * w;
-        for (let x = 0; x < w; x += 2) {
-          const gi = gy * gw + ((x / cell) | 0);
-          const i = (rowBase + x) * 4;
-          const r = data[i], g = data[i + 1], b = data[i + 2];
-          totalCnt[gi]++;
-          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-          lumSum[gi] += lum;
-          if (lum < lumMin[gi]) lumMin[gi] = lum;
-          if (lum > lumMax[gi]) lumMax[gi] = lum;
-          // Generous yellow gate: tolerates shade, sodium light, sensor WB.
-          if (r > 95 && g > 70 && b < r * 0.85 && (r + g) > b * 2.25) yellowCnt[gi]++;
-        }
-      }
-
-      const mask = new Uint8Array(nCells);
-      for (let gi = 0; gi < nCells; gi++) {
-        if (!totalCnt[gi]) continue;
-        if (kind === 'yellow') {
-          if (yellowCnt[gi] / totalCnt[gi] > 0.34) mask[gi] = 1;
-        } else {
-          const avg = lumSum[gi] / totalCnt[gi];
-          // Dark plate body with bright digits => low mean, high span.
-          if (avg < 110 && (lumMax[gi] - lumMin[gi]) > 55) mask[gi] = 1;
-        }
-      }
-
-      // Largest 4-connected component over mask cells (iterative BFS).
-      const seen = new Uint8Array(nCells);
-      let best = null;
-      const queue = new Int32Array(nCells);
-      for (let start = 0; start < nCells; start++) {
-        if (!mask[start] || seen[start]) continue;
-        let head = 0, tail = 0;
-        queue[tail++] = start; seen[start] = 1;
-        let minGx = gw, maxGx = -1, minGy = gh, maxGy = -1, size = 0;
-        while (head < tail) {
-          const cur = queue[head++];
-          size++;
-          const cx = cur % gw, cy = (cur / gw) | 0;
-          if (cx < minGx) minGx = cx;
-          if (cx > maxGx) maxGx = cx;
-          if (cy < minGy) minGy = cy;
-          if (cy > maxGy) maxGy = cy;
-          if (cx > 0 && mask[cur - 1] && !seen[cur - 1]) { seen[cur - 1] = 1; queue[tail++] = cur - 1; }
-          if (cx < gw - 1 && mask[cur + 1] && !seen[cur + 1]) { seen[cur + 1] = 1; queue[tail++] = cur + 1; }
-          if (cy > 0 && mask[cur - gw] && !seen[cur - gw]) { seen[cur - gw] = 1; queue[tail++] = cur - gw; }
-          if (cy < gh - 1 && mask[cur + gw] && !seen[cur + gw]) { seen[cur + gw] = 1; queue[tail++] = cur + gw; }
-        }
-        if (!best || size > best.size) best = { size, minGx, maxGx, minGy, maxGy };
-      }
-      if (!best || best.size < 6) return null;
-
-      const bw = (best.maxGx - best.minGx + 1) * cell;
-      const bh = (best.maxGy - best.minGy + 1) * cell;
-      const aspect = bw / Math.max(1, bh);
-      // Sanity: road plate is a wide strip; tzama plate is squarer (2 rows).
-      if (kind === 'yellow' && (aspect < 1.4 || aspect > 10)) return null;
-      if (kind === 'dark' && (aspect < 0.6 || aspect > 6)) return null;
-      if (bw * bh < w * h * 0.004) return null; // too tiny to hold digits
-
-      const margin = Math.round(cell * 1.5);
-      return {
-        x: Math.max(0, best.minGx * cell - margin),
-        y: Math.max(0, best.minGy * cell - margin),
-        w: Math.min(w - Math.max(0, best.minGx * cell - margin), bw + margin * 2),
-        h: Math.min(h - Math.max(0, best.minGy * cell - margin), bh + margin * 2)
-      };
-    },
-
-    centerBand(canvas) {
-      // Middle 70% x 55% — where a hand-aimed plate photo lands.
-      const w = canvas.width, h = canvas.height;
-      return {
-        x: Math.round(w * 0.15), y: Math.round(h * 0.225),
-        w: Math.round(w * 0.70), h: Math.round(h * 0.55)
-      };
-    },
-
-    cropRegion(canvas, rect, targetH) {
-      const rx = Math.max(0, Math.round(rect.x));
-      const ry = Math.max(0, Math.round(rect.y));
-      const rw = Math.max(1, Math.min(canvas.width - rx, Math.round(rect.w)));
-      const rh = Math.max(1, Math.min(canvas.height - ry, Math.round(rect.h)));
-      const scale = Math.min(4, Math.max(1, targetH / rh));
-      const c = document.createElement('canvas');
-      c.width = Math.max(1, Math.round(rw * scale));
-      c.height = Math.max(1, Math.round(rh * scale));
-      const ctx = c.getContext('2d', { willReadFrequently: true });
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(canvas, rx, ry, rw, rh, 0, 0, c.width, c.height);
-      return c;
-    },
-
-    // ---------- Pre-processing variants ----------
-    grayscaleOf(canvas) {
-      const w = canvas.width, h = canvas.height;
-      const data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
-      const gray = new Uint8ClampedArray(w * h);
-      for (let p = 0, i = 0; p < gray.length; p++, i += 4) {
-        gray[p] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-      }
-      return { gray, w, h };
-    },
-
-    grayToCanvas(gray, w, h) {
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      const ctx = c.getContext('2d', { willReadFrequently: true });
-      const out = ctx.createImageData(w, h);
-      for (let p = 0, i = 0; p < gray.length; p++, i += 4) {
-        out.data[i] = out.data[i + 1] = out.data[i + 2] = gray[p];
-        out.data[i + 3] = 255;
-      }
-      ctx.putImageData(out, 0, 0);
-      return c;
-    },
-
-    // Bradley adaptive threshold via integral image — immune to lighting
-    // gradients and partial reflections that kill a single global cutoff.
-    bradley(canvas, invert) {
-      const { gray, w, h } = this.grayscaleOf(canvas);
-      const integ = new Float64Array((w + 1) * (h + 1));
-      for (let y = 0; y < h; y++) {
-        let rowSum = 0;
-        for (let x = 0; x < w; x++) {
-          rowSum += gray[y * w + x];
-          integ[(y + 1) * (w + 1) + (x + 1)] = integ[y * (w + 1) + (x + 1)] + rowSum;
-        }
-      }
-      const win = Math.max(15, (Math.min(w, h) / 6) | 0);
-      const half = win >> 1;
-      const T = 0.82; // pixel must be < 82% of local mean to be "ink"
-      const out = new Uint8ClampedArray(w * h);
-      for (let y = 0; y < h; y++) {
-        const y1 = Math.max(0, y - half), y2 = Math.min(h - 1, y + half);
-        for (let x = 0; x < w; x++) {
-          const x1 = Math.max(0, x - half), x2 = Math.min(w - 1, x + half);
-          const area = (x2 - x1 + 1) * (y2 - y1 + 1);
-          const sum = integ[(y2 + 1) * (w + 1) + (x2 + 1)] - integ[y1 * (w + 1) + (x2 + 1)]
-                    - integ[(y2 + 1) * (w + 1) + x1] + integ[y1 * (w + 1) + x1];
-          const src = gray[y * w + x];
-          const val = invert ? 255 - src : src;
-          const mean = invert ? 255 - (sum / area) : (sum / area);
-          out[y * w + x] = (val < mean * T) ? 0 : 255;
-        }
-      }
-      return this.grayToCanvas(out, w, h);
-    },
-
-    // Global Otsu threshold — best on clean, evenly lit shots.
-    otsu(canvas, invert) {
-      const { gray, w, h } = this.grayscaleOf(canvas);
-      const hist = new Uint32Array(256);
-      for (let p = 0; p < gray.length; p++) hist[gray[p]]++;
-      const total = gray.length;
-      let sumAll = 0;
-      for (let t = 0; t < 256; t++) sumAll += t * hist[t];
-      let sumB = 0, wB = 0, maxVar = 0, thresh = 127;
-      for (let t = 0; t < 256; t++) {
-        wB += hist[t];
-        if (!wB) continue;
-        const wF = total - wB;
-        if (!wF) break;
-        sumB += t * hist[t];
-        const mB = sumB / wB, mF = (sumAll - sumB) / wF;
-        const v = wB * wF * (mB - mF) * (mB - mF);
-        if (v > maxVar) { maxVar = v; thresh = t; }
-      }
-      const out = new Uint8ClampedArray(w * h);
-      for (let p = 0; p < gray.length; p++) {
-        const ink = invert ? (gray[p] > thresh) : (gray[p] <= thresh);
-        out[p] = ink ? 0 : 255;
-      }
-      return this.grayToCanvas(out, w, h);
-    },
-
-    // Percentile contrast stretch — leaves binarization to Tesseract.
-    stretch(canvas) {
-      const { gray, w, h } = this.grayscaleOf(canvas);
-      const hist = new Uint32Array(256);
-      for (let p = 0; p < gray.length; p++) hist[gray[p]]++;
-      const total = gray.length;
-      let lo = 0, hi = 255, acc = 0;
-      for (let t = 0; t < 256; t++) { acc += hist[t]; if (acc >= total * 0.02) { lo = t; break; } }
-      acc = 0;
-      for (let t = 255; t >= 0; t--) { acc += hist[t]; if (acc >= total * 0.02) { hi = t; break; } }
-      const span = Math.max(1, hi - lo);
-      const out = new Uint8ClampedArray(w * h);
-      for (let p = 0; p < gray.length; p++) {
-        out[p] = Math.max(0, Math.min(255, ((gray[p] - lo) * 255 / span) | 0));
-      }
-      return this.grayToCanvas(out, w, h);
-    },
-
-    // ---------- Candidate extraction & scoring ----------
-    extractCandidates(text, mode) {
-      const lines = String(text || '').split('\n')
-        .map(l => l.replace(/\D/g, ''))
-        .filter(l => l.length > 0);
-      const all = lines.join('');
-      const out = [];
-      if (mode === 'tzama') {
-        // Two stacked rows (e.g. "117" over "642") → join adjacent lines.
-        for (let i = 0; i + 1 < lines.length; i++) {
-          const joined = lines[i] + lines[i + 1];
-          if (joined.length >= 5 && joined.length <= 6) out.push(joined);
-        }
-        for (const l of lines) if (l.length >= 5 && l.length <= 6) out.push(l);
-        if (all.length >= 5 && all.length <= 6) out.push(all);
-        if (all.length === 7) { out.push(all.slice(0, 6)); out.push(all.slice(1)); }
-      } else {
-        for (const l of lines) if (l.length === 7 || l.length === 8) out.push(l);
-        if (all.length === 7 || all.length === 8) out.push(all);
-        if (all.length > 8) {
-          out.push(all.slice(0, 8));
-          out.push(all.slice(-8));
-          out.push(all.slice(0, 7));
-          out.push(all.slice(-7));
-        }
-      }
-      return [...new Set(out)];
-    },
-
-    scoreCandidate(cand, conf, mode) {
-      let s = Math.max(0, Math.min(100, Number(conf) || 0));
-      if (mode === 'tzama') {
-        if (cand.length === 6) s += 100;
-        else if (cand.length === 5) s += 85;
-      } else {
-        if (cand.length === 8) s += 100;
-        else if (cand.length === 7) s += 94;
-      }
-      if (/^0{3,}/.test(cand)) s -= 40;        // leading-zero runs = border noise
-      if (/^(\d)\1+$/.test(cand)) s -= 70;     // one repeated digit = texture noise
-      return s;
-    },
-
-    // ---------- Orchestrator ----------
-    async recognize(file, mode, onStatus) {
-      const started = Date.now();
-      const deadline = () => Date.now() - started > this.OVERALL_DEADLINE_MS;
-      const say = (m) => { try { if (onStatus) onStatus(m); } catch (e) { /* UI only */ } };
-
-      say('טוען מנוע זיהוי...');
-      const worker = await this.getWorker();
-
-      say('מעבד תמונה...');
-      const src = await this.loadImage(file);
-      const full = this.toCanvas(src, 1600);
-      if (typeof src.close === 'function') { try { src.close(); } catch (e) { /* bitmap */ } }
-
-      // Region plan: located plate first (highest yield), then center band,
-      // then full frame. Each region carries its page-segmentation mode.
-      const regions = [];
-      const kind = mode === 'tzama' ? 'dark' : 'yellow';
-      const rect = this.locatePlate(full, kind);
-      if (rect) {
-        regions.push({ canvas: this.cropRegion(full, rect, 240), psm: mode === 'tzama' ? '6' : '7', tag: 'plate' });
-      }
-      regions.push({ canvas: this.cropRegion(full, this.centerBand(full), 400), psm: '6', tag: 'center' });
-      regions.push({ canvas: this.toCanvas(full, 1100), psm: '6', tag: 'full' });
-
-      const variantsFor = (regionCanvas) => [
-        { canvas: this.bradley(regionCanvas, mode === 'tzama'), tag: 'bradley' },
-        { canvas: this.stretch(regionCanvas), tag: 'stretch' },
-        { canvas: this.otsu(regionCanvas, mode === 'tzama'), tag: 'otsu' },
-        { canvas: this.bradley(regionCanvas, mode !== 'tzama'), tag: 'bradley-inv' }
-      ];
-
-      let best = null;
-      const consider = (cand, conf, provenance) => {
-        const score = this.scoreCandidate(cand, conf, mode);
-        if (!best || score > best.score) best = { plate: cand, score, conf, provenance };
-      };
-
-      let pass = 0;
-      outer:
-      for (const region of regions) {
-        for (const variant of variantsFor(region.canvas)) {
-          if (deadline()) break outer;
-          pass++;
-          say(pass === 1 ? 'מפענח ספרות לוחית...' : `מפענח (ניסיון ${pass})...`);
-          try {
-            await worker.setParameters({ tessedit_pageseg_mode: region.psm });
-            const res = await worker.recognize(variant.canvas);
-            const text = res && res.data ? res.data.text : '';
-            const conf = res && res.data ? res.data.confidence : 0;
-            for (const cand of this.extractCandidates(text, mode)) {
-              consider(cand, conf, region.tag + '/' + variant.tag);
-            }
-          } catch (e) {
-            // One bad pass must never kill the scan; note and continue.
-            console.warn('OCR pass failed:', region.tag, variant.tag, e);
-          }
-          // Early exit: valid-length candidate with strong confidence.
-          if (best && best.score >= 175) break outer;
-        }
-      }
-
-      return best; // null if nothing plate-like was read
-    }
-  };
-
-  async function handleRealCameraOCR(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const scanOverlay = document.getElementById('ocrScanBar');
-    const statusMsg = document.getElementById('ocrStatusMsg');
-    scanOverlay.style.display = 'flex';
-    statusMsg.innerText = 'סורק ומפענח לוחית רישוי (Plate AI)...';
-    hideError();
-
-    try {
-      const formData = new FormData();
-      formData.append('upload', file);
-      formData.append('regions', 'il');
-
-      const response = await fetch('https://api.platerecognizer.com/v1/plate-reader/', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Token 88ebc7ef8ce3fd675df9ebdc9279f7741bb38987'
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('שגיאת שרת זיהוי: ' + response.status);
-      }
-
-      const data = await response.json();
-      console.log('Plate Recognizer API Result:', data);
-
-      if (data && data.results && data.results.length > 0) {
-        const topResult = data.results[0];
-        const rawPlate = topResult.plate ? topResult.plate.toUpperCase().replace(/[^0-9]/g, '') : '';
-        
-        if (rawPlate.length >= 5) {
-          statusMsg.innerText = 'לוחית זוהתה בהצלחה: ' + formatPlateString(rawPlate);
-          const plateInput = document.getElementById('plateInput');
-          plateInput.value = formatPlateString(rawPlate);
-          onPlateInputChange(plateInput);
-          setTimeout(() => {
-            runVehicleSearch();
-          }, 300);
-        } else {
-          showError('לא זוהתה לוחית קריאה בתמונה. נסה לצלם שוב בבירור או הקלד ידנית.');
-        }
-      } else {
-        showError('לא זוהתה לוחית רכב בתמונה. ודא שהלוחית ברורה ומוארת ונסה שוב.');
-      }
-    } catch (err) {
-      console.error('ALPR Error:', err);
-      showError('שגיאה בסריקת התמונה. אנא נסה שוב או הקלד ידנית.');
-    } finally {
-      setTimeout(() => {
-        scanOverlay.style.display = 'none';
-        input.value = '';
-      }, 400);
-    }
-  }
-
-  // Also remove old PlateOCR if present
-  
-  renderRecents();
-
-  // Warm the OCR engine the moment the user reaches for the camera, so the
-  // model is already downloaded by the time the photo comes back.
-  document.getElementById('cameraFileInput').addEventListener('click', function () {
-    PlateOCR.getWorker().catch(function () { /* retried on actual scan */ });
-  });
-</script>
-
-</body>
-</html>
+  >
