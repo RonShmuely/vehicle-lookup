@@ -170,9 +170,9 @@
       overflow: hidden;
     }
     .plate-wrapper.tzama-mode {
-      background: linear-gradient(180deg, #9a3412 0%, #7c2d12 50%, #451a03 100%);
-      border-color: #270a04;
-      box-shadow: 0 8px 24px rgba(124, 45, 18, 0.5), inset 0 2px 2px rgba(254, 215, 170, 0.4);
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+      border-color: #334155;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), inset 0 2px 2px rgba(255, 255, 255, 0.2);
     }
 
     .plate-inner-border {
@@ -187,7 +187,7 @@
       z-index: 1;
     }
     .plate-wrapper.tzama-mode .plate-inner-border {
-      border-color: #3b1104;
+      border-color: #cbd5e1;
     }
 
     .plate-il-strip {
@@ -205,8 +205,9 @@
       user-select: none;
     }
     .plate-wrapper.tzama-mode .plate-il-strip {
-      background: linear-gradient(180deg, #431407 0%, #270a04 100%);
-      color: #fed7aa;
+      background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+      color: #f8fafc;
+      border-right: 1px solid #475569;
     }
     .plate-il-flag {
       display: flex;
@@ -243,8 +244,8 @@
       text-transform: uppercase;
     }
     .plate-wrapper.tzama-mode .real-plate-input {
-      color: #fed7aa;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
     }
     .real-plate-input::placeholder {
       font-size: 19px;
@@ -254,7 +255,7 @@
       font-family: 'Heebo', sans-serif;
     }
     .plate-wrapper.tzama-mode .real-plate-input::placeholder {
-      color: rgba(254, 215, 170, 0.4);
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .plate-camera-btn {
@@ -277,9 +278,9 @@
       transform: scale(0.95);
     }
     .plate-wrapper.tzama-mode .plate-camera-btn {
-      color: #fed7aa;
-      background: rgba(0,0,0,0.35);
-      border-color: rgba(254, 215, 170, 0.25);
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
     .plate-clear-btn {
@@ -297,6 +298,10 @@
       display: none;
       align-items: center;
       justify-content: center;
+    }
+    .plate-wrapper.tzama-mode .plate-clear-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
     }
 
     .ocr-scanning-bar {
@@ -806,7 +811,7 @@
       רכב כביש
     </button>
     <button type="button" class="type-btn tzama" id="btnModeTzama" onclick="setMode('tzama')">
-      ציוד צמ''ה (לוחית חומה)
+      ציוד צמ''ה (לוחית שחורה/חומה)
     </button>
   </div>
 
@@ -841,7 +846,7 @@
         onkeydown="if(event.key === 'Enter') runVehicleSearch()"
       />
       <!-- Camera Scan Button (SVG) -->
-      <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה">
+      <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה (רכב או צמ''ה)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
           <circle cx="12" cy="13" r="4"></circle>
@@ -854,7 +859,7 @@
     <!-- Scanning Overlay -->
     <div class="ocr-scanning-bar" id="ocrScanBar">
       <div class="ocr-spinner"></div>
-      <span id="ocrStatusMsg">מאתר לוחית צהובה בתמונה...</span>
+      <span id="ocrStatusMsg">מאתר לוחית בתמונה...</span>
     </div>
   </div>
 
@@ -1017,7 +1022,10 @@
   // Pure digits and hyphens formatting (ZERO COLONS)
   function formatPlateString(val) {
     const clean = String(val).replace(/\D/g, '');
-    if (clean.length === 7) {
+    if (clean.length === 6) {
+      // 6-digit tzama plate (e.g. 117-642)
+      return clean.slice(0, 3) + '-' + clean.slice(3);
+    } else if (clean.length === 7) {
       return clean.slice(0, 2) + '-' + clean.slice(2, 5) + '-' + clean.slice(5);
     } else if (clean.length === 8) {
       return clean.slice(0, 3) + '-' + clean.slice(3, 5) + '-' + clean.slice(5);
@@ -1522,7 +1530,7 @@
   }
 
   // ===================================================================
-  // ROBUST MULTI-PASS ISRAELI LICENSE PLATE OCR PIPELINE (Tesseract.js)
+  // DUAL-MODE ISRAELI LICENSE PLATE OCR (CARS 1-LINE & TZAMA 2-TIER)
   // ===================================================================
   async function handleRealCameraOCR(input) {
     if (!input.files || !input.files[0]) return;
@@ -1530,7 +1538,7 @@
     const scanOverlay = document.getElementById('ocrScanBar');
     const statusMsg = document.getElementById('ocrStatusMsg');
     scanOverlay.style.display = 'flex';
-    statusMsg.innerText = 'מאתר לוחית צהובה בתמונה...';
+    statusMsg.innerText = 'מעבד תמונה ומזהה לוחית...';
     hideError();
 
     try {
@@ -1561,7 +1569,7 @@
       baseCtx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(imgUrl);
 
-      // STEP 1: Scan for Israeli Yellow License Plate Region (RGB Color Filter)
+      // STEP 1: Scan for Yellow (Car) or Dark/High Contrast (Tzama 2-Tier) Clusters
       const imgData = baseCtx.getImageData(0, 0, w, h);
       const data = imgData.data;
       let yellowXs = [], yellowYs = [];
@@ -1569,9 +1577,7 @@
       for (let y = 0; y < h; y += 3) {
         for (let x = 0; x < w; x += 3) {
           const idx = (y * w + x) * 4;
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
+          const r = data[idx], g = data[idx + 1], b = data[idx + 2];
           if (r > 120 && g > 100 && b < 100 && (r + g) > (2.2 * b)) {
             yellowXs.push(x);
             yellowYs.push(y);
@@ -1581,45 +1587,44 @@
 
       let cropCanvas = document.createElement('canvas');
       let cropCtx = cropCanvas.getContext('2d');
-      let usedCrop = false;
+      let isTzamaPlate = (currentMode === 'tzama');
 
-      if (yellowXs.length > 80) {
+      if (yellowXs.length > 80 && !isTzamaPlate) {
+        // Car Yellow Horizontal Plate
         yellowXs.sort((a, b) => a - b);
         yellowYs.sort((a, b) => a - b);
-        
         const p1 = Math.floor(yellowXs.length * 0.02);
         const p99 = Math.floor(yellowXs.length * 0.98);
-        
         let minX = Math.max(0, yellowXs[p1] - 15);
         let maxX = Math.min(w, yellowXs[p99] + 15);
         let minY = Math.max(0, yellowYs[p1] - 12);
         let maxY = Math.min(h, yellowYs[p99] + 12);
-
-        let cropW = maxX - minX;
-        let cropH = maxY - minY;
-        let ar = cropW / (cropH || 1);
-
-        if (cropW > 80 && cropH > 25 && ar >= 1.8 && ar <= 7.0) {
-          cropCanvas.width = cropW;
-          cropCanvas.height = cropH;
-          cropCtx.drawImage(baseCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-          usedCrop = true;
-        }
-      }
-
-      if (!usedCrop) {
-        let cropY = Math.round(h * 0.35);
-        let cropH = Math.round(h * 0.35);
-        cropCanvas.width = w;
+        let cropW = maxX - minX, cropH = maxY - minY;
+        cropCanvas.width = cropW;
         cropCanvas.height = cropH;
-        cropCtx.drawImage(baseCanvas, 0, cropY, w, cropH, 0, 0, w, cropH);
+        cropCtx.drawImage(baseCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+      } else {
+        // Full Image / Center Region for Tzama 2-Tier or Direct Photos
+        cropCanvas.width = w;
+        cropCanvas.height = h;
+        cropCtx.drawImage(baseCanvas, 0, 0, w, h);
       }
 
-      // STEP 2: Preprocess Crop for OCR (High Contrast Binarization)
+      // STEP 2: Preprocess for OCR (High Contrast Binarization)
       const cropData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
       const cData = cropData.data;
+      
+      // Check average brightness to detect dark tzama plates vs bright plates
+      let totalLuma = 0;
+      for (let i = 0; i < cData.length; i += 16) {
+        totalLuma += 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
+      }
+      const avgLuma = totalLuma / (cData.length / 16);
+      const invert = (avgLuma < 100); // Invert black plates with white digits
+
       for (let i = 0; i < cData.length; i += 4) {
-        const gray = 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
+        let gray = 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
+        if (invert) gray = 255 - gray;
         const val = gray < 115 ? 0 : 255;
         cData[i] = val;
         cData[i+1] = val;
@@ -1627,22 +1632,29 @@
       }
       cropCtx.putImageData(cropData, 0, 0);
 
-      statusMsg.innerText = 'מפענח ספרות לוחית...';
+      statusMsg.innerText = 'מפענח ספרות (חד-קומתי או דו-קומתי)...';
 
-      // STEP 3: Run Tesseract OCR on the isolated plate canvas
+      // STEP 3: Run Tesseract OCR (with multi-line concatenation for 2-tier Tzama plates)
       const { data: { text } } = await Tesseract.recognize(cropCanvas, 'eng', {
-        tessedit_char_whitelist: '0123456789ILil-.: '
+        tessedit_char_whitelist: '0123456789ILil-.: \n'
       });
 
-      const digitsMatch = text.replace(/[^0-9]/g, '');
-      const candidates = text.match(/\b\d{5,8}\b/g) || [];
-      
+      // Parse Lines & Concatenate (Handles 2-tier stacked צמ"ה plates: "117\n642" -> "117642")
+      const lines = text.split('\n').map(l => l.replace(/[^0-9]/g, '')).filter(l => l.length >= 2);
       let detectedPlate = '';
-      if (candidates.length > 0) {
-        candidates.sort((a, b) => b.length - a.length);
-        detectedPlate = candidates[0];
-      } else if (digitsMatch.length >= 5 && digitsMatch.length <= 8) {
-        detectedPlate = digitsMatch;
+
+      if (lines.length >= 2 && (lines[0].length + lines[1].length >= 5 && lines[0].length + lines[1].length <= 8)) {
+        // Stacked 2-tier Tzama plate detected (e.g. 117 + 642 = 117642)
+        detectedPlate = lines[0] + lines[1];
+      } else {
+        const allDigits = text.replace(/[^0-9]/g, '');
+        const candidates = text.match(/\b\d{5,8}\b/g) || [];
+        if (candidates.length > 0) {
+          candidates.sort((a, b) => b.length - a.length);
+          detectedPlate = candidates[0];
+        } else if (allDigits.length >= 5 && allDigits.length <= 8) {
+          detectedPlate = allDigits;
+        }
       }
 
       if (detectedPlate) {
