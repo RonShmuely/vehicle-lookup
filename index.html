@@ -846,7 +846,7 @@
         onkeydown="if(event.key === 'Enter') runVehicleSearch()"
       />
       <!-- Camera Scan Button (SVG) -->
-      <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה (רכב או צמ''ה)">
+      <button type="button" class="plate-camera-btn" onclick="document.getElementById('cameraFileInput').click()" title="סרוק לוחית במצלמה">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
           <circle cx="12" cy="13" r="4"></circle>
@@ -859,7 +859,7 @@
     <!-- Scanning Overlay -->
     <div class="ocr-scanning-bar" id="ocrScanBar">
       <div class="ocr-spinner"></div>
-      <span id="ocrStatusMsg">מאתר לוחית בתמונה...</span>
+      <span id="ocrStatusMsg">מעבד תמונה ומזהה לוחית...</span>
     </div>
   </div>
 
@@ -1019,11 +1019,10 @@
     document.getElementById('plateWrapper').classList.toggle('tzama-mode', mode === 'tzama');
   }
 
-  // Pure digits and hyphens formatting (ZERO COLONS)
+  // Formatting strictly with hyphens
   function formatPlateString(val) {
     const clean = String(val).replace(/\D/g, '');
     if (clean.length === 6) {
-      // 6-digit tzama plate (e.g. 117-642)
       return clean.slice(0, 3) + '-' + clean.slice(3);
     } else if (clean.length === 7) {
       return clean.slice(0, 2) + '-' + clean.slice(2, 5) + '-' + clean.slice(5);
@@ -1035,17 +1034,10 @@
 
   function onPlateInputChange(el) {
     const clearBtn = document.getElementById('clearBtn');
-    const val = el.value.replace(/\D/g, '');
     if (el.value.trim().length > 0) {
       clearBtn.style.display = 'flex';
     } else {
       clearBtn.style.display = 'none';
-    }
-
-    if (val.length <= 6 && val.length >= 4) {
-      if (currentMode !== 'tzama') setMode('tzama');
-    } else if (val.length >= 7) {
-      if (currentMode !== 'car') setMode('car');
     }
   }
 
@@ -1110,7 +1102,7 @@
         return;
       }
 
-      // 2. Query Heavy Machinery / Tzama Dataset if 6 digits or tzama mode
+      // 2. Query Heavy Machinery / Tzama Dataset if in tzama mode or 6 digits
       if (currentMode === 'tzama' || plate.length <= 6) {
         const tzamaRecs = await fetchGovCKANByQuery(RESOURCES.tzama_equipment, plate);
         if (tzamaRecs.length > 0) {
@@ -1318,12 +1310,11 @@
     const hp = Number(data.modelInfo.koah_sus || data.details.koah_sus || 0);
     const cc = Number(data.modelInfo.nefah_manoa || data.details.nefah_manoa || 0);
 
-    // 1. Ultra Luxury / Performance SUVs (Audi Q8/Q7, BMW X5/X6/X7, Mercedes GLE/GLS/G-Wagon, Porsche Cayenne, Range Rover)
     if (brand.includes('אאודי') || brand.includes('audi')) {
       if (model.includes('q8') || model.includes('sq8') || model.includes('rs q8')) {
         if (model.includes('rs')) return 1350000;
         if (model.includes('sq8') || hp > 450) return 920000;
-        return 760000; // Base Audi Q8 50 TDI / 55 TFSI
+        return 760000;
       }
       if (model.includes('q7') || model.includes('e-tron gt')) return 680000;
       if (model.includes('q5') || model.includes('a6')) return 410000;
@@ -1369,31 +1360,26 @@
       return 340000;
     }
 
-    // Heavy Trucks & Commercial Machinery
     if (data.category.includes('משאית') || data.category.includes('כבד')) {
       if (brand.includes('וולוו') || brand.includes('סקניה') || brand.includes('מרצדס') || brand.includes('מאן')) return 680000;
       return 420000;
     }
 
-    // High Displacement / High HP generic override
     if (hp >= 300 || cc >= 3000) return 480000;
     if (hp >= 240 || cc >= 2400) return 320000;
 
-    // Midsize / Popular EV
     if (brand.includes('טסלה') || brand.includes('tesla')) {
       if (model.includes('x') || model.includes('s')) return 580000;
       if (model.includes('y')) return 245000;
       return 210000;
     }
 
-    // Mainstream Family SUVs (RAV4, Santa Fe, Kodiaq, Sorento)
     if (model.includes('rav4') || model.includes('santa fe') || model.includes('kodiaq') || model.includes('sorento') || model.includes('ev6') || model.includes('palisade')) {
       return 240000;
     }
 
-    // Mainstream Crossovers (Tucson, Sportage, Atto 3, Geometry, MG4, Corolla Cross)
     if (data.category.includes('מסחרי')) return 175000;
-    return 165000; // Base standard family car
+    return 165000;
   }
 
   function computeWeightedMarketValuation(data) {
@@ -1530,7 +1516,7 @@
   }
 
   // ===================================================================
-  // DUAL-MODE ISRAELI LICENSE PLATE OCR (CARS 1-LINE & TZAMA 2-TIER)
+  // ULTRA-RELIABLE DUAL-MODE ISRAELI LICENSE PLATE OCR ENGINE
   // ===================================================================
   async function handleRealCameraOCR(input) {
     if (!input.files || !input.files[0]) return;
@@ -1538,7 +1524,7 @@
     const scanOverlay = document.getElementById('ocrScanBar');
     const statusMsg = document.getElementById('ocrStatusMsg');
     scanOverlay.style.display = 'flex';
-    statusMsg.innerText = 'מעבד תמונה ומזהה לוחית...';
+    statusMsg.innerText = 'מזהה לוחית רישוי במצלמה...';
     hideError();
 
     try {
@@ -1555,7 +1541,7 @@
         img.src = imgUrl;
       });
 
-      const maxDim = 1200;
+      const maxDim = 1400;
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
@@ -1569,16 +1555,17 @@
       baseCtx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(imgUrl);
 
-      // STEP 1: Scan for Yellow (Car) or Dark/High Contrast (Tzama 2-Tier) Clusters
+      // STEP 1: Smart Yellow / Contrast Plate Localization
       const imgData = baseCtx.getImageData(0, 0, w, h);
       const data = imgData.data;
       let yellowXs = [], yellowYs = [];
 
-      for (let y = 0; y < h; y += 3) {
-        for (let x = 0; x < w; x += 3) {
+      for (let y = 0; y < h; y += 2) {
+        for (let x = 0; x < w; x += 2) {
           const idx = (y * w + x) * 4;
           const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-          if (r > 120 && g > 100 && b < 100 && (r + g) > (2.2 * b)) {
+          // Generous yellow condition for camera sensor & indoor white balance
+          if (r > 90 && g > 75 && r > b * 1.25 && g > b * 1.08) {
             yellowXs.push(x);
             yellowYs.push(y);
           }
@@ -1587,82 +1574,98 @@
 
       let cropCanvas = document.createElement('canvas');
       let cropCtx = cropCanvas.getContext('2d');
-      let isTzamaPlate = (currentMode === 'tzama');
 
-      if (yellowXs.length > 80 && !isTzamaPlate) {
-        // Car Yellow Horizontal Plate
+      if (yellowXs.length > 50 && currentMode !== 'tzama') {
+        // Yellow car plate detected
         yellowXs.sort((a, b) => a - b);
         yellowYs.sort((a, b) => a - b);
-        const p1 = Math.floor(yellowXs.length * 0.02);
-        const p99 = Math.floor(yellowXs.length * 0.98);
-        let minX = Math.max(0, yellowXs[p1] - 15);
-        let maxX = Math.min(w, yellowXs[p99] + 15);
-        let minY = Math.max(0, yellowYs[p1] - 12);
-        let maxY = Math.min(h, yellowYs[p99] + 12);
+        const p1 = Math.floor(yellowXs.length * 0.01);
+        const p99 = Math.floor(yellowXs.length * 0.99);
+        
+        let minX = Math.max(0, yellowXs[p1] - 30);
+        let maxX = Math.min(w, yellowXs[p99] + 30);
+        let minY = Math.max(0, yellowYs[p1] - 25);
+        let maxY = Math.min(h, yellowYs[p99] + 25);
+        
         let cropW = maxX - minX, cropH = maxY - minY;
         cropCanvas.width = cropW;
         cropCanvas.height = cropH;
         cropCtx.drawImage(baseCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
       } else {
-        // Full Image / Center Region for Tzama 2-Tier or Direct Photos
+        // Direct or Tzama Plate (Take center/full image)
         cropCanvas.width = w;
         cropCanvas.height = h;
         cropCtx.drawImage(baseCanvas, 0, 0, w, h);
       }
 
-      // STEP 2: Preprocess for OCR (High Contrast Binarization)
+      // STEP 2: Multi-pass High Contrast Digit Enhancement
       const cropData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
       const cData = cropData.data;
       
-      // Check average brightness to detect dark tzama plates vs bright plates
       let totalLuma = 0;
       for (let i = 0; i < cData.length; i += 16) {
         totalLuma += 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
       }
       const avgLuma = totalLuma / (cData.length / 16);
-      const invert = (avgLuma < 100); // Invert black plates with white digits
+      const invert = (avgLuma < 90);
 
       for (let i = 0; i < cData.length; i += 4) {
         let gray = 0.299 * cData[i] + 0.587 * cData[i+1] + 0.114 * cData[i+2];
         if (invert) gray = 255 - gray;
-        const val = gray < 115 ? 0 : 255;
+        const val = gray < 118 ? 0 : 255;
         cData[i] = val;
         cData[i+1] = val;
         cData[i+2] = val;
       }
       cropCtx.putImageData(cropData, 0, 0);
 
-      statusMsg.innerText = 'מפענח ספרות (חד-קומתי או דו-קומתי)...';
+      statusMsg.innerText = 'מפענח ספרות לוחית...';
 
-      // STEP 3: Run Tesseract OCR (with multi-line concatenation for 2-tier Tzama plates)
+      // STEP 3: Run Tesseract Recognition
       const { data: { text } } = await Tesseract.recognize(cropCanvas, 'eng', {
         tessedit_char_whitelist: '0123456789ILil-.: \n'
       });
 
-      // Parse Lines & Concatenate (Handles 2-tier stacked צמ"ה plates: "117\n642" -> "117642")
-      const lines = text.split('\n').map(l => l.replace(/[^0-9]/g, '')).filter(l => l.length >= 2);
+      console.log('Raw OCR Text:', text);
+
+      // STEP 4: Robust Candidate Extraction
+      // Remove all non-digits
+      const allDigits = text.replace(/[^0-9]/g, '');
+      const candidates = text.match(/\b\d{5,8}\b/g) || [];
       let detectedPlate = '';
 
-      if (lines.length >= 2 && (lines[0].length + lines[1].length >= 5 && lines[0].length + lines[1].length <= 8)) {
-        // Stacked 2-tier Tzama plate detected (e.g. 117 + 642 = 117642)
-        detectedPlate = lines[0] + lines[1];
+      if (currentMode === 'tzama') {
+        // 1. Try 2-tier stacked lines for machinery (e.g. 117\n642 -> 117642)
+        const lines = text.split('\n').map(l => l.replace(/[^0-9]/g, '')).filter(l => l.length >= 2);
+        if (lines.length >= 2 && (lines[0].length + lines[1].length >= 5 && lines[0].length + lines[1].length <= 6)) {
+          detectedPlate = lines[0] + lines[1];
+        } else if (allDigits.length >= 5 && allDigits.length <= 6) {
+          detectedPlate = allDigits;
+        } else if (candidates.length > 0) {
+          detectedPlate = candidates[0];
+        }
       } else {
-        const allDigits = text.replace(/[^0-9]/g, '');
-        const candidates = text.match(/\b\d{5,8}\b/g) || [];
-        if (candidates.length > 0) {
+        // Car Mode: Strictly prioritize 7 or 8 digit numbers
+        if (allDigits.length === 7 || allDigits.length === 8) {
+          detectedPlate = allDigits;
+        } else if (allDigits.length > 8) {
+          // If extra noise was captured, take 8 digits or longest candidate
+          const match8 = allDigits.match(/\d{8}/);
+          const match7 = allDigits.match(/\d{7}/);
+          if (match8) detectedPlate = match8[0];
+          else if (match7) detectedPlate = match7[0];
+        } else if (candidates.length > 0) {
           candidates.sort((a, b) => b.length - a.length);
           detectedPlate = candidates[0];
-        } else if (allDigits.length >= 5 && allDigits.length <= 8) {
-          detectedPlate = allDigits;
         }
       }
 
-      if (detectedPlate) {
+      if (detectedPlate && detectedPlate.length >= 5) {
         document.getElementById('plateInput').value = formatPlateString(detectedPlate);
         onPlateInputChange(document.getElementById('plateInput'));
         runVehicleSearch();
       } else {
-        showError('לא זוהו ספרות לוחית בבירור. נסה לצלם מקרוב או הקלד ידנית.');
+        showError('לא זוהו ספרות לוחית בבירור. נסה לצלם מקרוב יותר או הקלד ידנית.');
       }
 
     } catch (err) {
